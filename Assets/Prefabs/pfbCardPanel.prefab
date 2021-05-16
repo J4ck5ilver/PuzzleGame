@@ -33,8 +33,8 @@ RectTransform:
   m_Father: {fileID: 3079460451168067431}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -67,7 +67,7 @@ MonoBehaviour:
   m_StartCorner: 0
   m_StartAxis: 1
   m_CellSize: {x: 0, y: 0}
-  m_Spacing: {x: 0, y: 130}
+  m_Spacing: {x: 0, y: 120}
   m_Constraint: 1
   m_ConstraintCount: 1
 --- !u!114 &6926837768790677523
@@ -288,7 +288,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 150, y: 400}
+  m_SizeDelta: {x: 100, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8328072442787043211
 CanvasRenderer:
@@ -310,7 +310,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f4df516b1ecd1a4c82f105428a1f690, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testPreFab: {fileID: 8341439271313161946, guid: f0cf70c6769255647a8e1de67340bcd0, type: 3}
+  cardSlotPreFab: {fileID: 0}
+  IsVertical: 0
+  IsStartPanel: 0
 --- !u!61 &3538742038427528658
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -335,7 +337,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 150, y: 400}
+  m_Size: {x: 100, y: 400}
   m_EdgeRadius: 0
 --- !u!114 &5205527468118177566
 MonoBehaviour:

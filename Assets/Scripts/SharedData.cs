@@ -11,6 +11,8 @@ public enum CardType
     Idle
 }
 
+
+
 // add themes? cards sos, + lists
 
 public enum Direction
@@ -22,10 +24,16 @@ public enum Direction
     None
 }
 
+public static class GameConstants
+{
+    public const int maxNumberOfMoves = 99;
+    public const int minNumberOfMoves = 0;
+}
 
 
 public class CardDescriptor
 {
+
     public int numberOfMoves                 { get; set; }
     public Vector3 directionVector  { get; set; }
     public bool speacialMove        { get; set; }

@@ -23,7 +23,7 @@ public class Card : MonoBehaviour , IPointerEnterHandler
     private void UpdateVisuals()
     {
         TextMeshProUGUI numberOfMovesText = transform.Find("numberOfMovesSprite").Find("text").GetComponent<TextMeshProUGUI>();
-        numberOfMovesText.text = cardData.numberOfMoves.ToString();
+        numberOfMovesText.text = Mathf.Clamp(cardData.numberOfMoves, GameConstants.minNumberOfMoves, GameConstants.maxNumberOfMoves).ToString();
 
         if(cardData.direction != Direction.None)
         {

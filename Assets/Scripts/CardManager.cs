@@ -25,6 +25,11 @@ public class CardManager : MonoBehaviour
 
     }
 
+    public List<Transform> GetCards()
+    {
+        return cards;
+    }
+
 
 
 

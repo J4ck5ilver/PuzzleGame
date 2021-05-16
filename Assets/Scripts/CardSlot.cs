@@ -16,7 +16,7 @@ public class CardSlot : MonoBehaviour, IPointerEnterHandler
     }
     private void UpdateGUI()
     {
-        background.sprite = currentCardSlotSO.backgroundSprite;
+      //  background.sprite = currentCardSlotSO.backgroundSprite;
     }
 
     void OnMouseOver()

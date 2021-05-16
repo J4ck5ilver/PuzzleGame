@@ -7,28 +7,44 @@ using System;
 public class CardGenerator : MonoBehaviour
 {
  
-    [SerializeField] public Transform CardPreFab;
-    [SerializeField] public Sprite NonDirectionSprite;
-    [SerializeField] public Sprite DirectionSprite;
+    [SerializeField] private Transform CardPreFab;
+    [SerializeField] private Sprite NonDirectionSprite;
+    [SerializeField] private Sprite DirectionSprite;
+    [SerializeField] private Vector2 startOffset;
 
+    private const float cardPadding = 5.0f;
 
     //ActionCardsListSO actionCardsList = null;
     private Dictionary<CardType, ActionCardSO> actionCardDirectory = null;
 
-
+    private Transform cardManager;
     public void CreateCard(CardDescriptor descriptor)
     {
         LoadData();
         //Transform cardManager = CardManager.Instance.transform;
-        Transform cardManager = transform.Find("CardManager").transform;
+        cardManager = transform.Find("CardManager").transform;
         Transform newCard = Instantiate(CardPreFab, cardManager);
         newCard.gameObject.name = GetName(descriptor);
-
+        float xOffSet = startOffset.x + (newCard.GetComponent<RectTransform>().rect.width * GetNumbersOfCarsInCardManager()) + cardPadding ;
+        newCard.transform.position = new Vector3(xOffSet, startOffset.y, 0);
         SetNonThemeSprites(newCard, descriptor);
         newCard.GetComponent<Card>().SetData(descriptor);
         
+    }
 
+    private int GetNumbersOfCarsInCardManager()
+    {
+        int returnValue = 0;
 
+        foreach(Transform card in cardManager)
+        {
+            Card hasComponent = card.GetComponent<Card>();
+            if(hasComponent != null)
+            {
+                returnValue++;
+            }
+        }
+        return returnValue;
     }
 
     private void LoadData()
@@ -61,7 +77,10 @@ public class CardGenerator : MonoBehaviour
 
         Image actionImage = card.Find("actionSprite").GetComponent<Image>();
         actionImage.sprite = actionCardDirectory[descriptor.type].sprite;
+
         actionImage.color = Color.white;
+        directionImage.color = UtilsClass.GetDirectionColor(descriptor.direction);
+
     }
 
 
