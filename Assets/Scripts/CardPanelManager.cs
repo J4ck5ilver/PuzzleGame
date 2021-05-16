@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System;
 
-public class CardPanelHandler : MonoBehaviour
+public class CardPanelManager : MonoBehaviour
 {
-    public static CardPanelHandler Instance { get; private set; }
+    public static CardPanelManager Instance { get; private set; }
 
     [SerializeField] private int NumberOfStartSlots;
 
@@ -17,7 +17,10 @@ public class CardPanelHandler : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        Vector3 startPos = new Vector3(-300,0,0) + canvas.transform.position;
+        Instance = this;
+
+
+            Vector3 startPos = new Vector3(-300,0,0) + canvas.transform.position;
         Quaternion startRot =  Quaternion.identity;
         currentActiveCardPanel = Instantiate(currentActiveCardPanelSO.preFab);
         currentActiveCardPanel.gameObject.SetActive(true);

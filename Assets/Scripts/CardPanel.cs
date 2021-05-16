@@ -6,7 +6,6 @@ using UnityEngine.EventSystems;
 
 public class CardPanel : MonoBehaviour
 {
-    [SerializeField] private Transform testPreFab;
     private Transform cardSlots;
     private CardPanelSO currentCardPanelSO;
     private Image background;
@@ -30,14 +29,9 @@ public class CardPanel : MonoBehaviour
 
     public void AddCardSlot()
     {
-        // Transform newCardSlot = Instantiate(testPreFab, cardSlots.transform);
-         Transform newCardSlot = Instantiate(currentCardPanelSO.CardSlot.preFab, cardSlots.transform);
-       // Debug.Log(newCardSlot.GetComponent<RectTransform>().rect);
-        // GameObject newCardSlot = Instantiate(testPreFab);
-        // newCardSlot.transform.SetParent(cardSlots.transform);
 
-        //    CardSlots cs = cardSlots.GetComponent<CardSlots>();
-        //    cs.CreateSlot(currentCardPanelSO.CardSlot.preFab);
+         Transform newCardSlot = Instantiate(currentCardPanelSO.CardSlot.preFab, cardSlots.transform);
+
          newCardSlot.GetComponent<CardSlot>().SetActiveGUI(currentCardPanelSO.CardSlot);
           activeCardSlots.Add(newCardSlot);
 
@@ -55,6 +49,7 @@ public class CardPanel : MonoBehaviour
             int offset = (int)Mathf.Ceil((rectTransform.rect.height / 2.0f)) + paddingOffset;
             layoutGroup.padding.top = offset;
             layoutGroup.padding.bottom = offset;
+            layoutGroup.spacing = new Vector2(0, (int)Mathf.Ceil(rectTransform.rect.height) + paddingOffset);
         }
     }
 
