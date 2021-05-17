@@ -13,8 +13,6 @@ public class CardPanel : MonoBehaviour
     private CardSlotSO cardSlotSO;
 
     [SerializeField] private Transform cardSlotPreFab;
-    [SerializeField] private bool IsVertical;
-    [SerializeField] private bool IsStartPanel;
 
     private const int paddingOffset = 5;
     public void SetPanelGUI(CardPanelSO cardPanelSO)
@@ -54,15 +52,14 @@ public class CardPanel : MonoBehaviour
 
     private void UpdatePadding(RectTransform rectTransform)
     {
-        if (IsVertical)
-        {
+ 
             GridLayoutGroup layoutGroup = cardSlots.GetComponent<GridLayoutGroup>();
             layoutGroup.SetLayoutVertical();
             int offset = (int)Mathf.Ceil((rectTransform.rect.height / 2.0f)) + paddingOffset;
             layoutGroup.padding.top = offset;
             layoutGroup.padding.bottom = offset;
             layoutGroup.spacing = new Vector2(0, (int)Mathf.Ceil(rectTransform.rect.height) + paddingOffset);
-        }
+        
     }
 
     private void UpdatePanelGUI()
@@ -92,22 +89,19 @@ public class CardPanel : MonoBehaviour
 
     private void Start()
     {
-        if(IsStartPanel)
-        {
-
+     
         List<Transform> cards = CardManager.Instance.GetCards();
         foreach(Transform card in cards)
         {
-                //instanciate the cards 
-                card.SetParent(AddCardSlot());
-                card.position = new Vector3(0,0,0);
-                card.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 1);
-                card.GetComponent<RectTransform>().offsetMax = new Vector2(0, 0);
-                card.GetComponent<RectTransform>().offsetMin = new Vector2(0, 0);
-                card.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+                //instanciate the cards
+             Transform newCard = Instantiate(card, AddCardSlot());
+
+               // card.SetParent(AddCardSlot());
+            newCard.position = new Vector3(0,0,0);
+            card.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
             card.GetComponent<RectTransform>().position = new Vector3(0,0,0);
               
-            }
+            
         }
 
     }
