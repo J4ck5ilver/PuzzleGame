@@ -15,94 +15,94 @@ public class CardPanel : MonoBehaviour
     [SerializeField] private Transform cardSlotPreFab;
 
     private const int paddingOffset = 5;
-    public void SetPanelGUI(CardPanelSO cardPanelSO)
-    {
-        this.cardPanelSO = cardPanelSO;
-        UpdatePanelGUI();
-    }
+    //public void SetPanelGUI(CardPanelSO cardPanelSO)
+    //{
+    //    this.cardPanelSO = cardPanelSO;
+    //    UpdatePanelGUI();
+    //}
 
-    public void SetCardSlotGUI(CardSlotSO cardSlotSO)
-    {
-        this.cardSlotSO = cardSlotSO;
-        UpdateCardSlotGUI();
-    }
+    //public void SetCardSlotGUI(CardSlotSO cardSlotSO)
+    //{
+    //    this.cardSlotSO = cardSlotSO;
+    //    UpdateCardSlotGUI();
+    //}
 
-    void OnMouseClick()
-    {
-        Debug.Log("Drag");
-    }
+    //void OnMouseClick()
+    //{
+    //    Debug.Log("Drag");
+    //}
 
-    private Transform AddCardSlot()
-    {
+    //private Transform AddCardSlot()
+    //{
 
-         Transform newCardSlot = Instantiate(cardSlotPreFab, cardSlots.transform);
+    //     Transform newCardSlot = Instantiate(cardSlotPreFab, cardSlots.transform);
 
-        newCardSlot.position = new Vector3(0,0,0);
-        newCardSlot.GetComponent<RectTransform>().position = new Vector3(0, 0, 0);
-        newCardSlot.GetComponent<CardSlot>().SetActiveGUI(cardSlotSO);
-          activeCardSlots.Add(newCardSlot);
+    //    newCardSlot.position = new Vector3(0,0,0);
+    //    newCardSlot.GetComponent<RectTransform>().position = new Vector3(0, 0, 0);
+    //    newCardSlot.GetComponent<CardSlot>().SetActiveGUI(cardSlotSO);
+    //      activeCardSlots.Add(newCardSlot);
 
-        if(activeCardSlots.Count == 1)
-        {
-            UpdatePadding(newCardSlot.GetComponent<RectTransform>());
-        }
+    //    if(activeCardSlots.Count == 1)
+    //    {
+    //        UpdatePadding(newCardSlot.GetComponent<RectTransform>());
+    //    }
 
-        return newCardSlot;
-    }
+    //    return newCardSlot;
+    //}
 
-    private void UpdatePadding(RectTransform rectTransform)
-    {
+    //private void UpdatePadding(RectTransform rectTransform)
+    //{
  
-            GridLayoutGroup layoutGroup = cardSlots.GetComponent<GridLayoutGroup>();
-            layoutGroup.SetLayoutVertical();
-            int offset = (int)Mathf.Ceil((rectTransform.rect.height / 2.0f)) + paddingOffset;
-            layoutGroup.padding.top = offset;
-            layoutGroup.padding.bottom = offset;
-            layoutGroup.spacing = new Vector2(0, (int)Mathf.Ceil(rectTransform.rect.height) + paddingOffset);
+    //        //GridLayoutGroup layoutGroup = cardSlots.GetComponent<GridLayoutGroup>();
+    //        //layoutGroup.SetLayoutVertical();
+    //        //int offset = (int)Mathf.Ceil((rectTransform.rect.height / 2.0f)) + paddingOffset;
+    //        //layoutGroup.padding.top = offset;
+    //        //layoutGroup.padding.bottom = offset;
+    //        //layoutGroup.spacing = new Vector2(0, (int)Mathf.Ceil(rectTransform.rect.height) + paddingOffset);
         
-    }
+    //}
 
-    private void UpdatePanelGUI()
-    {
-        Image backgroundImage = transform.Find("background").GetComponent<Image>();
-        backgroundImage.sprite = cardPanelSO.panelBackgroundSprite;
-    }
+    //private void UpdatePanelGUI()
+    //{
+    //    Image backgroundImage = transform.Find("background").GetComponent<Image>();
+    //    backgroundImage.sprite = cardPanelSO.panelBackgroundSprite;
+    //}
 
-    private void UpdateCardSlotGUI()
-    {
+    //private void UpdateCardSlotGUI()
+    //{
 
-       foreach(Transform card in activeCardSlots)
-        {
-            card.GetComponent<CardSlot>().SetActiveGUI(cardSlotSO);
-        }
+    //   foreach(Transform card in activeCardSlots)
+    //    {
+    //        card.GetComponent<CardSlot>().SetActiveGUI(cardSlotSO);
+    //    }
 
-        Image backgroundImage = transform.Find("background").GetComponent<Image>();
-        backgroundImage.sprite = cardPanelSO.panelBackgroundSprite;
-    }
+    //    Image backgroundImage = transform.Find("background").GetComponent<Image>();
+    //    backgroundImage.sprite = cardPanelSO.panelBackgroundSprite;
+    //}
 
-    private void Awake()
-    {
-        activeCardSlots = new List<Transform>();
-        cardSlots = transform.Find("cardSlotViewport").Find("cardSlots");
+    //private void awake()
+    //{
+    //    activeCardSlots = new List<Transform>();
+    //    //cardSlots = transform.Find("cardSlotViewport").Find("cardSlots");
 
-    }
+    //}
 
-    private void Start()
-    {
+    //private void Start()
+    //{
      
-        List<Transform> cards = CardManager.Instance.GetCards();
-        foreach(Transform card in cards)
-        {
-                //instanciate the cards
-             Transform newCard = Instantiate(card, AddCardSlot());
+    //    List<Transform> cards = CardManager.Instance.GetCards();
+    //    foreach(Transform card in cards)
+    //    {
+    //            //instanciate the cards
+    //         Transform newCard = Instantiate(card, AddCardSlot());
 
-               // card.SetParent(AddCardSlot());
-            newCard.position = new Vector3(0,0,0);
-            card.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-            card.GetComponent<RectTransform>().position = new Vector3(0,0,0);
+    //           // card.SetParent(AddCardSlot());
+    //        newCard.position = new Vector3(0,0,0);
+    //        card.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+    //        card.GetComponent<RectTransform>().position = new Vector3(0,0,0);
               
             
-        }
+    //    }
 
-    }
+    //}
 }

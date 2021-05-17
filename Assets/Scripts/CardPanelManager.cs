@@ -15,8 +15,8 @@ public class CardPanelManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
-        startPanel = transform.Find("startPanel");
-        endPanel = transform.Find("endPanel");
+        //startPanel = transform.Find("startPanel");
+        //endPanel = transform.Find("endPanel");
 
 
     }
