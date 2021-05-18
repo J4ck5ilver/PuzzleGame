@@ -50,7 +50,7 @@ public class CardSlot : MonoBehaviour, IPointerEnterHandler
 
     void Awake()
     {
-        background = transform.Find("background").GetComponent<Image>();
+       // background = transform.Find("background").GetComponent<Image>();
     }
 
 
