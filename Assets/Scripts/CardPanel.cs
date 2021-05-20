@@ -90,11 +90,17 @@ public class CardPanel : MonoBehaviour
         {
             case CardSortOrder.CardType:
 
-                Dictionary<CardType, List<Transform>> sortTypeDictionary = new Dictionary<CardType, List<Transform>>();
+                Dictionary<CardType, Dictionary<Direction, List<Transform>>> sortTypeDirectionDictionary = new Dictionary<CardType, Dictionary<Direction, List<Transform>>>();
                 var cardTypes = CardType.GetValues(typeof(CardType));
+                var directionTypes = Direction.GetValues(typeof(Direction));
+
                 foreach (CardType type in cardTypes)
                 {
-                    sortTypeDictionary.Add(type, new List<Transform>());
+                    sortTypeDirectionDictionary.Add(type, new Dictionary<Direction, List<Transform>>());
+                    foreach (Direction direction in directionTypes)
+                    {
+                        sortTypeDirectionDictionary[type][direction] = new List<Transform>();
+                    }
                 }
 
                 foreach (Transform cardSlot in nonSelectedCardSlots)
@@ -107,7 +113,7 @@ public class CardPanel : MonoBehaviour
                         if (tmpCard != null)
                         {
                             CardDescriptor cardDesc = tmpCard.GetComponent<Card>().GetData();
-                            sortTypeDictionary[cardDesc.type].Add(cardSlot);
+                            sortTypeDirectionDictionary[cardDesc.type][cardDesc.direction].Add(cardSlot);
                             //   cardSlot.gameObject.transform.parent = null;
                         }
                         else
@@ -119,29 +125,65 @@ public class CardPanel : MonoBehaviour
                 }
 
 
-                var directionTypes = Direction.GetValues(typeof(Direction));
-                Dictionary<Direction, List<Transform>> sortDirectionDirectory;
                 foreach (CardType type in cardTypes)
                 {
-                    sortDirectionDirectory = new Dictionary<Direction, List<Transform>>();
-
-                    foreach (Transform sortCardSlot in sortTypeDictionary[type])
-                    {
-                        Direction cardDirection = sortCardSlot.GetComponent<CardSlot>().GetCard().GetComponent<Card>().GetData().direction;
-                        sortDirectionDirectory[cardDirection].Add(sortCardSlot);
-
-                    }
-
                     foreach (Direction direction in directionTypes)
                     {
+                        int indexCount = 0;
+                        foreach (Transform carSlot in sortTypeDirectionDictionary[type][direction])
+                        {
 
+                            int myVal = carSlot.GetComponent<CardSlot>().GetCard().GetComponent<Card>().GetData().numberOfMoves;
+                            bool foundBiggerValue = false;
+
+                            for(int i = indexCount; i < sortTypeDirectionDictionary[type][direction].Count; i++)
+                            {
+
+                            //}
+                            //foreach (Transform otherCardSlot in sortTypeDirectionDictionary[type][direction][indexCount])
+                            //{
+                                int otherVal = sortTypeDirectionDictionary[type][direction][i].GetComponent<CardSlot>().GetCard().GetComponent<Card>().GetData().numberOfMoves;
+                                if (myVal < otherVal)
+                                {
+                                    foundBiggerValue = true;
+                                }
+                            }
+
+                            if(!foundBiggerValue)
+                            {
+
+                                carSlot.SetSiblingIndex(0);
+                            }
+
+                            indexCount++;
+                    
+                       
+
+                        }
                     }
-                    //sortCardSlot.SetSiblingIndex(0);
-
                 }
+                    // sortDirectionDirectory;
+                    //foreach (CardType type in cardTypes)
+                    //{
+                    //    sortDirectionDirectory = new Dictionary<Direction, List<Transform>>();
+
+                    //    foreach (Transform sortCardSlot in sortTypeDictionary[type])
+                    //    {
+                    //        Direction cardDirection = sortCardSlot.GetComponent<CardSlot>().GetCard().GetComponent<Card>().GetData().direction;
+                    //        sortDirectionDirectory[cardDirection].Add(sortCardSlot);
+
+                    //    }
+
+                    //    foreach (Direction direction in directionTypes)
+                    //    {
+
+                    //    }
+                    //    //sortCardSlot.SetSiblingIndex(0);
+
+                    //}
 
 
-                break;
+                    break;
             case CardSortOrder.Direction:
 
                 break;
