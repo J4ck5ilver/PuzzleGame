@@ -21,8 +21,8 @@ public class CardGenerator : MonoBehaviour
     public void CreateCard(CardDescriptor descriptor)
     {
         LoadData();
-        //Transform cardManager = CardManager.Instance.transform;
-        cardManager = transform.Find("CardManager").transform;
+        Transform cardManager = CardManager.Instance.transform;
+        //cardManager = transform.Find("CardManager").transform;
         Transform newCard = Instantiate(CardPreFab, cardManager);
         newCard.gameObject.name = GetName(descriptor);
         float xOffSet = startOffset.x + (newCard.GetComponent<RectTransform>().rect.width * GetNumbersOfCarsInCardManager()) + cardPadding ;

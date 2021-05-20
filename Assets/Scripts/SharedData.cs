@@ -31,9 +31,22 @@ public enum Direction
     None
 }
 
+
+
+public enum CardTheme
+{
+    None,
+    Wood
+}
+public enum CardPanelTheme
+{
+    None,
+    Wood
+}
+
 public static class GameConstants
 {
-    public const int maxNumberOfMoves = 99;
+    public const int maxNumberOfMoves = 10;
     public const int minNumberOfMoves = 0;
 }
 
@@ -41,7 +54,7 @@ public static class GameConstants
 [Serializable] public class CardDescriptor
 {
 
-    public int numberOfMoves                 { get; set; }
+    public int numberOfMoves        { get; set; }
     public Vector3 directionVector  { get; set; }
     public bool speacialMove        { get; set; }
     public CardType type            { get; set; }

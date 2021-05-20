@@ -8,17 +8,7 @@ using UnityEditor;
 [CustomEditor(typeof(CardGenerator))]
 public class CardGeneratorEditor : Editor
 {
-
-
-
     static private CardDescriptor cardDescriptor = new CardDescriptor();
-
-    //private int numberOfMoves;
-    //private Vector3 direction;
-    //private bool speacialMove;
-    //private CardType type;
-
-
 
     public override void OnInspectorGUI()
     {

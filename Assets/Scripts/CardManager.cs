@@ -25,6 +25,13 @@ public class CardManager : MonoBehaviour
 
     }
 
+    public void SetTheme(CardTheme theme)
+    {
+        CardThemeSO cardTheme = AssetManager.Instance.GetCardTheme(theme);
+
+        // Loop all cards here
+    }
+
     public List<Transform> GetCards()
     {
         return cards;

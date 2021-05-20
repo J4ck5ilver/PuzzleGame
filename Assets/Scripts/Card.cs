@@ -9,9 +9,6 @@ using UnityEngine;
 public class Card : MonoBehaviour, IPointerEnterHandler
 {
 
-    private CardDescriptor cardData = new CardDescriptor();
-
-
     [SerializeField] private int numberOfMoves;
     [SerializeField] private CardType cardType;
     [SerializeField] private Direction direction;
@@ -100,6 +97,13 @@ public class Card : MonoBehaviour, IPointerEnterHandler
         return cardData;
     }
 
+    public void SetTheme(CardThemeSO theme)
+    {
+        if (theme != null)
+        {
+
+        }
+    }
     public void OnPointerEnter(PointerEventData pointerEventData)
     {
 

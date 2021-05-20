@@ -8,8 +8,8 @@ public class CardPanelManager : MonoBehaviour
 {
     public static CardPanelManager Instance { get; private set; }
 
-    private Transform startPanel;
-    private Transform endPanel;
+
+    [SerializeField] private Transform startPanel;
 
     // Start is called before the first frame update
     void Awake()
@@ -19,6 +19,17 @@ public class CardPanelManager : MonoBehaviour
         //endPanel = transform.Find("endPanel");
 
 
+    }
+
+    public Transform GetStartPanel()
+    {
+        return startPanel;
+    }
+
+    public void SetTheme(CardPanelTheme theme)
+    {
+        CardPanelThemeSO cardPanelThem = AssetManager.Instance.GetCardPanelTheme(theme);
+        startPanel.GetComponent<CardPanel>().SetTheme(cardPanelThem);
     }
 
 }

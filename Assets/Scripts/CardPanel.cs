@@ -4,16 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
+
 public class CardPanel : MonoBehaviour
 {
-
-    private CardPanelSO cardPanelSO;
-    private CardSlotSO cardSlotSO;
 
     [SerializeField] private Transform cardSlotPreFab;
 
     private const int paddingOffset = 5;
-
 
     private GridLayoutGroup cardSlotsGridLayoutGroup;
     private float cardSlotWidth;
@@ -21,9 +18,7 @@ public class CardPanel : MonoBehaviour
     private Transform selectedCardSlots;
     private Transform nonSelectedCardSlots;
 
-
-
-    CardSortOrder sortOrder;
+    private CardSortOrder sortOrder;
 
 
     private void Awake()
@@ -31,12 +26,24 @@ public class CardPanel : MonoBehaviour
         // SortOrder = new CardSortOrder();
         sortOrder = CardSortOrder.CardType;
         InitCardSlotData();
+
     }
 
     private void Start()
     {
         RemoveAllCardSlots();
         InitNewCards();
+        UpdateSlotsOffset();
+        SortNonSelectedCards();
+        //UpdateUIFunction() // from themeManager
+    }
+
+    public void SetTheme(CardPanelThemeSO theme)
+    {
+        if(theme != null)
+        {
+            transform.Find("background").GetComponent<Image>().sprite = theme.panelBackgroundSprite;
+        }
     }
 
     private void InitCardSlotData()
@@ -90,16 +97,18 @@ public class CardPanel : MonoBehaviour
         {
             case CardSortOrder.CardType:
 
-                Dictionary<CardType, Dictionary<Direction, List<Transform>>> sortTypeDirectionDictionary = new Dictionary<CardType, Dictionary<Direction, List<Transform>>>();
+                Dictionary<CardType, Dictionary<Direction, Dictionary<int, List<Transform>>>> sortDictionary = new Dictionary<CardType, Dictionary<Direction, Dictionary<int, List<Transform>>>>();
                 var cardTypes = CardType.GetValues(typeof(CardType));
                 var directionTypes = Direction.GetValues(typeof(Direction));
 
                 foreach (CardType type in cardTypes)
                 {
-                    sortTypeDirectionDictionary.Add(type, new Dictionary<Direction, List<Transform>>());
+                    sortDictionary.Add(type, new Dictionary<Direction, Dictionary<int, List<Transform>>>());
                     foreach (Direction direction in directionTypes)
                     {
-                        sortTypeDirectionDictionary[type][direction] = new List<Transform>();
+                        sortDictionary[type][direction] = new Dictionary<int, List<Transform>>();
+                        for (int i = GameConstants.minNumberOfMoves; i < GameConstants.maxNumberOfMoves; i++)
+                            sortDictionary[type][direction][i] = new List<Transform>();
                     }
                 }
 
@@ -108,13 +117,11 @@ public class CardPanel : MonoBehaviour
                     CardSlot hasComponent = cardSlot.GetComponent<CardSlot>();
                     if (hasComponent != null)
                     {
-                        //  Debug.Log(cardSlot.name.ToString());
                         Transform tmpCard = hasComponent.GetCard();
                         if (tmpCard != null)
                         {
                             CardDescriptor cardDesc = tmpCard.GetComponent<Card>().GetData();
-                            sortTypeDirectionDictionary[cardDesc.type][cardDesc.direction].Add(cardSlot);
-                            //   cardSlot.gameObject.transform.parent = null;
+                            sortDictionary[cardDesc.type][cardDesc.direction][cardDesc.numberOfMoves].Add(cardSlot);
                         }
                         else
                         {
@@ -129,61 +136,17 @@ public class CardPanel : MonoBehaviour
                 {
                     foreach (Direction direction in directionTypes)
                     {
-                        int indexCount = 0;
-                        foreach (Transform carSlot in sortTypeDirectionDictionary[type][direction])
+                        for (int i = GameConstants.minNumberOfMoves; i < GameConstants.maxNumberOfMoves; i++)
                         {
-
-                            int myVal = carSlot.GetComponent<CardSlot>().GetCard().GetComponent<Card>().GetData().numberOfMoves;
-                            bool foundBiggerValue = false;
-
-                            for(int i = indexCount; i < sortTypeDirectionDictionary[type][direction].Count; i++)
+                            foreach (Transform cardSlot in sortDictionary[type][direction][i])
                             {
-
-                            //}
-                            //foreach (Transform otherCardSlot in sortTypeDirectionDictionary[type][direction][indexCount])
-                            //{
-                                int otherVal = sortTypeDirectionDictionary[type][direction][i].GetComponent<CardSlot>().GetCard().GetComponent<Card>().GetData().numberOfMoves;
-                                if (myVal < otherVal)
-                                {
-                                    foundBiggerValue = true;
-                                }
+                                cardSlot.SetSiblingIndex(0);
                             }
-
-                            if(!foundBiggerValue)
-                            {
-
-                                carSlot.SetSiblingIndex(0);
-                            }
-
-                            indexCount++;
-                    
-                       
-
                         }
                     }
                 }
-                    // sortDirectionDirectory;
-                    //foreach (CardType type in cardTypes)
-                    //{
-                    //    sortDirectionDirectory = new Dictionary<Direction, List<Transform>>();
 
-                    //    foreach (Transform sortCardSlot in sortTypeDictionary[type])
-                    //    {
-                    //        Direction cardDirection = sortCardSlot.GetComponent<CardSlot>().GetCard().GetComponent<Card>().GetData().direction;
-                    //        sortDirectionDirectory[cardDirection].Add(sortCardSlot);
-
-                    //    }
-
-                    //    foreach (Direction direction in directionTypes)
-                    //    {
-
-                    //    }
-                    //    //sortCardSlot.SetSiblingIndex(0);
-
-                    //}
-
-
-                    break;
+                break;
             case CardSortOrder.Direction:
 
                 break;
@@ -214,9 +177,6 @@ public class CardPanel : MonoBehaviour
             rectTransCard.anchoredPosition = new Vector2(0, 0);
             //Update Card UI from ThemeManager
         }
-        UpdateSlotsOffset();
-        SortNonSelectedCards();
-        //UpdateUIFunction() // from themeManager
     }
 
     private int GetNumberOfActiveCardSlots()
@@ -229,7 +189,7 @@ public class CardPanel : MonoBehaviour
         int returnValue = 0;
         foreach (Transform cardSlot in selectedCardSlots)
         {
-            if (cardSlot.gameObject.activeInHierarchy)
+            if (cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>() != null)
             {
                 returnValue++;
             }
@@ -242,7 +202,7 @@ public class CardPanel : MonoBehaviour
         int returnValue = 0;
         foreach (Transform cardSlot in nonSelectedCardSlots)
         {
-            if (cardSlot.gameObject.activeInHierarchy)
+            if (cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>() != null)
             {
                 returnValue++;
             }
@@ -258,24 +218,9 @@ public class CardPanel : MonoBehaviour
 
         foreach (Transform cardSlot in selectedCardSlots)
         {
-            //if (cardSlot.gameObject.active)
-            //{
-
-            //    foreach (Transform cardSlotSel in nonSelectedCardSlots)
-            //    {
-            //        if (cardSlotSel.gameObject.name == cardSlot.name)
-            //        {
-            //            cardSlot.gameObject.active = false;
-            //            cardSlotSel.gameObject.active = true;
-            //            break;
-            //        }
-            //    }
-            //    break;
-            //}
             if (cardSlot.GetComponent<CardSlot>() != null)
             {
                 cardSlot.SetParent(nonSelectedCardSlots.transform);
-                //cardSlot.transform.parent = nonSelectedCardSlots.transform;
                 break;
             }
 
@@ -290,31 +235,14 @@ public class CardPanel : MonoBehaviour
         InitCardSlotData();
         foreach (Transform cardSlot in nonSelectedCardSlots)
         {
-            //if (cardSlot.gameObject.active)
-            //{
-
-            //    foreach (Transform cardSlotSel in selectedCardSlots)
-            //    {
-            //        if (cardSlotSel.gameObject.name == cardSlot.name)
-            //        {
-            //            cardSlot.gameObject.active = false;
-            //            cardSlotSel.gameObject.active = true;
-            //            break;
-            //        }
-            //    }
-            //            break;
-            //}
             if (cardSlot.GetComponent<CardSlot>() != null)
             {
-                // cardSlot.transform.parent = selectedCardSlots.transform;
                 cardSlot.SetParent(selectedCardSlots.transform);
                 break;
             }
-
         }
         UpdateSlotsOffset();
         SortNonSelectedCards();
-        //  print("moveNonToSel");
     }
 
     private void UpdateSlotsOffset()
@@ -348,36 +276,6 @@ public class CardPanel : MonoBehaviour
     //    Debug.Log("Drag");
     //}
 
-    //private Transform AddCardSlot()
-    //{
-
-    //     Transform newCardSlot = Instantiate(cardSlotPreFab, cardSlots.transform);
-
-    //    newCardSlot.position = new Vector3(0,0,0);
-    //    newCardSlot.GetComponent<RectTransform>().position = new Vector3(0, 0, 0);
-    //    newCardSlot.GetComponent<CardSlot>().SetActiveGUI(cardSlotSO);
-    //      activeCardSlots.Add(newCardSlot);
-
-    //    if(activeCardSlots.Count == 1)
-    //    {
-    //        UpdatePadding(newCardSlot.GetComponent<RectTransform>());
-    //    }
-
-    //    return newCardSlot;
-    //}
-
-    //private void UpdatePadding(RectTransform rectTransform)
-    //{
-
-    //        //GridLayoutGroup layoutGroup = cardSlots.GetComponent<GridLayoutGroup>();
-    //        //layoutGroup.SetLayoutVertical();
-    //        //int offset = (int)Mathf.Ceil((rectTransform.rect.height / 2.0f)) + paddingOffset;
-    //        //layoutGroup.padding.top = offset;
-    //        //layoutGroup.padding.bottom = offset;
-    //        //layoutGroup.spacing = new Vector2(0, (int)Mathf.Ceil(rectTransform.rect.height) + paddingOffset);
-
-    //}
-
     //private void UpdatePanelGUI()
     //{
     //    Image backgroundImage = transform.Find("background").GetComponent<Image>();
@@ -396,29 +294,4 @@ public class CardPanel : MonoBehaviour
     //    backgroundImage.sprite = cardPanelSO.panelBackgroundSprite;
     //}
 
-    //private void awake()
-    //{
-    //    activeCardSlots = new List<Transform>();
-    //    //cardSlots = transform.Find("cardSlotViewport").Find("cardSlots");
-
-    //}
-
-    //private void Start()
-    //{
-
-    //    List<Transform> cards = CardManager.Instance.GetCards();
-    //    foreach(Transform card in cards)
-    //    {
-    //            //instanciate the cards
-    //         Transform newCard = Instantiate(card, AddCardSlot());
-
-    //           // card.SetParent(AddCardSlot());
-    //        newCard.position = new Vector3(0,0,0);
-    //        card.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-    //        card.GetComponent<RectTransform>().position = new Vector3(0,0,0);
-
-
-    //    }
-
-    //}
 }

@@ -5,15 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 public class CardSlot : MonoBehaviour, IPointerEnterHandler
 {
-     
 
-    private CardSlotSO currentCardSlotSO; // needed?
-    private Image background;
-    public void SetActiveGUI(CardSlotSO cardPanelSO)
-    {
-        currentCardSlotSO = cardPanelSO;
-        UpdateGUI();
-    }
 
     public Transform GetCard()
     {
@@ -28,11 +20,6 @@ public class CardSlot : MonoBehaviour, IPointerEnterHandler
             }
         }
         return returnValue;
-    }
-
-    private void UpdateGUI()
-    {
-      //  background.sprite = currentCardSlotSO.backgroundSprite;
     }
 
     void OnMouseOver()
