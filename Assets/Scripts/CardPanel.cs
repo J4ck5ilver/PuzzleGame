@@ -23,10 +23,14 @@ public class CardPanel : MonoBehaviour
 
 
 
+    CardSortOrder sortOrder;
+
 
     private void Awake()
     {
-        InitData();
+        // SortOrder = new CardSortOrder();
+        sortOrder = CardSortOrder.CardType;
+        InitCardSlotData();
     }
 
     private void Start()
@@ -35,7 +39,7 @@ public class CardPanel : MonoBehaviour
         InitNewCards();
     }
 
-    private void InitData()
+    private void InitCardSlotData()
     {
 
         Transform cardSlots = transform.Find("cardSlotViewport").Find("cardSlots");
@@ -45,7 +49,7 @@ public class CardPanel : MonoBehaviour
         cardSlotsGridLayoutGroup = cardSlots.GetComponent<GridLayoutGroup>();
 
         cardSlotWidth = cardSlotPreFab.GetComponent<RectTransform>().rect.width;
-        
+
         cardSlotsGridLayoutGroup.padding.right = Mathf.CeilToInt(cardSlotWidth / 2.0f) + paddingOffset * 2;
         cardSlotsGridLayoutGroup.padding.left = cardSlotsGridLayoutGroup.padding.right;
 
@@ -73,20 +77,103 @@ public class CardPanel : MonoBehaviour
         }
     }
 
+
+    public void SetSortOrder(CardSortOrder sortOrder)
+    {
+        this.sortOrder = sortOrder;
+    }
+
+    public void SortNonSelectedCards()
+    {
+        // This could probably be optimized.
+        switch (sortOrder)
+        {
+            case CardSortOrder.CardType:
+
+                Dictionary<CardType, List<Transform>> sortTypeDictionary = new Dictionary<CardType, List<Transform>>();
+                var cardTypes = CardType.GetValues(typeof(CardType));
+                foreach (CardType type in cardTypes)
+                {
+                    sortTypeDictionary.Add(type, new List<Transform>());
+                }
+
+                foreach (Transform cardSlot in nonSelectedCardSlots)
+                {
+                    CardSlot hasComponent = cardSlot.GetComponent<CardSlot>();
+                    if (hasComponent != null)
+                    {
+                        //  Debug.Log(cardSlot.name.ToString());
+                        Transform tmpCard = hasComponent.GetCard();
+                        if (tmpCard != null)
+                        {
+                            CardDescriptor cardDesc = tmpCard.GetComponent<Card>().GetData();
+                            sortTypeDictionary[cardDesc.type].Add(cardSlot);
+                            //   cardSlot.gameObject.transform.parent = null;
+                        }
+                        else
+                        {
+                            Destroy(cardSlot.gameObject);
+                            Debug.LogError("Sorting CardSlot with no card");
+                        }
+                    }
+                }
+
+
+                var directionTypes = Direction.GetValues(typeof(Direction));
+                Dictionary<Direction, List<Transform>> sortDirectionDirectory;
+                foreach (CardType type in cardTypes)
+                {
+                    sortDirectionDirectory = new Dictionary<Direction, List<Transform>>();
+
+                    foreach (Transform sortCardSlot in sortTypeDictionary[type])
+                    {
+                        Direction cardDirection = sortCardSlot.GetComponent<CardSlot>().GetCard().GetComponent<Card>().GetData().direction;
+                        sortDirectionDirectory[cardDirection].Add(sortCardSlot);
+
+                    }
+
+                    foreach (Direction direction in directionTypes)
+                    {
+
+                    }
+                    //sortCardSlot.SetSiblingIndex(0);
+
+                }
+
+
+                break;
+            case CardSortOrder.Direction:
+
+                break;
+            case CardSortOrder.NumberOfMoves:
+
+                break;
+        }
+    }
+
+
     private void InitNewCards()
     {
-       List<Transform> cards = CardManager.Instance.GetCards();
+        List<Transform> cards = CardManager.Instance.GetCards();
 
         foreach (Transform card in cards)
         {
             Transform newCardSlot = Instantiate(cardSlotPreFab, nonSelectedCardSlots.transform);
+            RectTransform rectTransCardSlot = newCardSlot.GetComponent<RectTransform>();
+            rectTransCardSlot.position = new Vector3(0, 0, 0);
+            rectTransCardSlot.anchoredPosition = new Vector2(0, 0);
+
+            CardDescriptor test = card.GetComponent<Card>().GetData();
+
             Transform newCard = Instantiate(card, new Vector3(0, 0, 0), Quaternion.identity, newCardSlot.transform); // Add to cardManager?
-            RectTransform rectTrans = newCard.GetComponent<RectTransform>();
-            rectTrans.position = new Vector3(0,0,0);
-            rectTrans.anchoredPosition = new Vector2(0,0);
+            newCard.GetComponent<Card>().SetData(card.GetComponent<Card>().GetData());
+            RectTransform rectTransCard = newCard.GetComponent<RectTransform>();
+            rectTransCard.position = new Vector3(0, 0, 0);
+            rectTransCard.anchoredPosition = new Vector2(0, 0);
             //Update Card UI from ThemeManager
         }
         UpdateSlotsOffset();
+        SortNonSelectedCards();
         //UpdateUIFunction() // from themeManager
     }
 
@@ -100,7 +187,7 @@ public class CardPanel : MonoBehaviour
         int returnValue = 0;
         foreach (Transform cardSlot in selectedCardSlots)
         {
-            if (cardSlot.gameObject.active)
+            if (cardSlot.gameObject.activeInHierarchy)
             {
                 returnValue++;
             }
@@ -113,7 +200,7 @@ public class CardPanel : MonoBehaviour
         int returnValue = 0;
         foreach (Transform cardSlot in nonSelectedCardSlots)
         {
-            if (cardSlot.gameObject.active)
+            if (cardSlot.gameObject.activeInHierarchy)
             {
                 returnValue++;
             }
@@ -125,7 +212,7 @@ public class CardPanel : MonoBehaviour
     public void MoveFirstChildFromSelectedToNonSelcted()
     {
 
-        InitData();
+        InitCardSlotData();
 
         foreach (Transform cardSlot in selectedCardSlots)
         {
@@ -153,11 +240,12 @@ public class CardPanel : MonoBehaviour
             break;
         }
         UpdateSlotsOffset();
+        SortNonSelectedCards();
     }
 
     public void MoveFirstChildFromNonSelctedToSelected()
     {
-        InitData();
+        InitCardSlotData();
         foreach (Transform cardSlot in nonSelectedCardSlots)
         {
             //if (cardSlot.gameObject.active)
@@ -176,13 +264,14 @@ public class CardPanel : MonoBehaviour
             //}
             if (cardSlot.GetComponent<CardSlot>() != null)
             {
-               // cardSlot.transform.parent = selectedCardSlots.transform;
+                // cardSlot.transform.parent = selectedCardSlots.transform;
                 cardSlot.SetParent(selectedCardSlots.transform);
                 break;
             }
 
         }
         UpdateSlotsOffset();
+        SortNonSelectedCards();
         //  print("moveNonToSel");
     }
 
@@ -195,7 +284,7 @@ public class CardPanel : MonoBehaviour
         float nonSelectedPanelOffset = ((nrOfSlotsInSelected) * (Mathf.CeilToInt(cardSlotWidth) + paddingOffset)) + (paddingOffset * 2);
         cardSlotsGridLayoutGroup.spacing = new Vector2(nonSelectedPanelOffset, 0.0f);
 
-        int viewOffset = nrOfSlotsInNonSelected * Mathf.CeilToInt((cardSlotWidth + paddingOffset)) -  paddingOffset * 6; //(left, right + middle seperator removal)
+        int viewOffset = nrOfSlotsInNonSelected * Mathf.CeilToInt((cardSlotWidth + paddingOffset)) - paddingOffset * 6; //(left, right + middle seperator removal)
         cardSlotsGridLayoutGroup.padding.left = viewOffset;
 
     }

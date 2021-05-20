@@ -54,7 +54,35 @@ public static class UtilsClass
             case Direction.East:
                 returnValue = 270;
                 break;
- 
+            case Direction.None:
+                returnValue = 1337;
+                break;
+
+        }
+        return returnValue;
+    }
+
+
+    public static Direction DegreesToDirection(float degress)
+    {
+        Direction returnValue = Direction.None;
+
+        System.Int32 degreesAsInt = Mathf.RoundToInt(degress);
+
+        switch (degreesAsInt)
+        {
+            case 0:
+                returnValue = Direction.North;
+                break;
+            case 90:
+                returnValue = Direction.West;
+                break;
+            case 180:
+                returnValue = Direction.South;
+                break;
+            case 270:
+                returnValue = Direction.East;
+                break;
         }
         return returnValue;
     }

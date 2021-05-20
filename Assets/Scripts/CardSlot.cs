@@ -14,6 +14,22 @@ public class CardSlot : MonoBehaviour, IPointerEnterHandler
         currentCardSlotSO = cardPanelSO;
         UpdateGUI();
     }
+
+    public Transform GetCard()
+    {
+        Transform returnValue = null;
+        foreach(Transform child in transform)
+        {
+            Card hasComponent = child.GetComponent<Card>();
+            if(hasComponent != null)
+            {
+                returnValue = child;
+                break;
+            }
+        }
+        return returnValue;
+    }
+
     private void UpdateGUI()
     {
       //  background.sprite = currentCardSlotSO.backgroundSprite;

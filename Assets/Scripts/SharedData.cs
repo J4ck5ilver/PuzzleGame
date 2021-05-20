@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 
 public enum CardType
@@ -12,6 +13,12 @@ public enum CardType
 }
 
 
+public enum CardSortOrder
+{
+    CardType,
+    Direction,
+    NumberOfMoves
+}
 
 // add themes? cards sos, + lists
 
@@ -31,7 +38,7 @@ public static class GameConstants
 }
 
 
-public class CardDescriptor
+[Serializable] public class CardDescriptor
 {
 
     public int numberOfMoves                 { get; set; }
@@ -42,7 +49,7 @@ public class CardDescriptor
 
     public CardDescriptor()
     {
-        numberOfMoves = 0;
+        numberOfMoves = 99;
         directionVector = new Vector3(0,0,0);
         speacialMove = false;
         type = CardType.Walk;
@@ -56,6 +63,7 @@ public class CardDescriptor
         type = other.type;
         direction = other.direction;
     }
+    
 
 }
 
