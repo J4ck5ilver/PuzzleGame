@@ -1,50 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
-using UnityEngine;
 
-public class Card : MonoBehaviour, IPointerEnterHandler
+public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler
 {
 
-    [SerializeField] private int numberOfMoves;
+    [SerializeField]private int numberOfMoves;
     [SerializeField] private CardType cardType;
     [SerializeField] private Direction direction;
 
+
+    public event EventHandler<PointerEventArgs> OnCardBeginDrag;
+    public event EventHandler<PointerEventArgs> OnCardDrag;
+
     public void SetData(CardDescriptor descriptor)
     {
-
         numberOfMoves = descriptor.numberOfMoves;
         cardType = descriptor.type;
         direction = descriptor.direction;
         UpdateVisuals();
-
-
-        //// todo add dir + non dir sprite into assetmanager and get them from there
-        //Dictionary<CardType, ActionCardSO> actionCards = AssetManager.Instance.GetActionCardDirectory();
-
-        //Image directionImage = transform.Find("directionSprite").GetComponent<Image>();
-        //if (descriptor.direction == Direction.None)
-        //{
-        //    directionImage.sprite = NonDirectionSprite;
-        //}
-        //else
-        //{
-        //    directionImage.sprite = DirectionSprite;
-        //}
-
-        //Image actionImage = card.Find("actionSprite").GetComponent<Image>();
-        //actionImage.sprite = actionCardDirectory[descriptor.type].sprite;
-
-        //actionImage.color = Color.white;
-        //directionImage.color = UtilsClass.GetDirectionColor(descriptor.direction);
-
-
-
-
-
     }
 
     private void UpdateVisuals()
@@ -62,33 +40,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler
     }
     public CardDescriptor GetData()
     {
-        //if (cardData == null)
-        //{
-
-
-        //    cardData = new CardDescriptor();
-
-        //    TextMeshProUGUI numberOfMovesText = transform.Find("numberOfMovesSprite").Find("text").GetComponent<TextMeshProUGUI>();
-        //    cardData.numberOfMoves = int.Parse(numberOfMovesText.text.ToString());
-
-        //    RectTransform directionTransform = transform.Find("directionSprite").GetComponent<RectTransform>();
-        //    cardData.direction = UtilsClass.DegreesToDirection(directionTransform.transform.rotation.eulerAngles.z);
-
-        //    Dictionary<CardType, ActionCardSO> actionCards =  AssetManager.Instance.GetActionCardDirectory();
-
-        //    var cardTypes = CardType.GetValues(typeof(CardType));
-
-        //    foreach(CardType type in cardTypes)
-        //    {
-        //        actionCards[type].sprite;
-        //    }
-
-
-        //}
-
         CardDescriptor cardData = new CardDescriptor();
-
-
 
         cardData.numberOfMoves = numberOfMoves;
         cardData.type          = cardType;
@@ -104,11 +56,15 @@ public class Card : MonoBehaviour, IPointerEnterHandler
 
         }
     }
-    public void OnPointerEnter(PointerEventData pointerEventData)
+    public void OnPointerClick(PointerEventData pointerEventData)
     {
+        Debug.Log("Card" + gameObject.name.ToString() + " Clicked");
+    }
 
-
-        //Output to console the GameObject's name and the following message
-        Debug.Log("Cursor Entering " + name + " GameObject");
+    public void OnDrag(PointerEventData eventData)
+    {
+        PointerEventArgs pointerData = new PointerEventArgs();
+        pointerData.pointerData = eventData;
+        OnCardDrag?.Invoke(this, pointerData);
     }
 }

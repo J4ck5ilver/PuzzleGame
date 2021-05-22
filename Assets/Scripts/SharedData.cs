@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-
+using UnityEngine.EventSystems;
 
 public enum CardType
 {
@@ -42,6 +42,11 @@ public enum CardPanelTheme
 {
     None,
     Wood
+}
+
+public class PointerEventArgs : EventArgs
+{
+    public PointerEventData pointerData;
 }
 
 public static class GameConstants

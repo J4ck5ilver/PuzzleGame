@@ -11,18 +11,39 @@ public class CardManager : MonoBehaviour
 
     private void Awake()
     {
-        
         Instance = this;
+        InitStartCards();
+    }
 
-        foreach(Transform childCard in transform)
+    private void InitStartCards()
+    {
+        foreach (Transform childCard in transform)
         {
             Card hasCompnent = childCard.GetComponent<Card>();
-            if(hasCompnent != null)
+            if (hasCompnent != null)
             {
                 cards.Add(childCard);
             }
         }
+    }
 
+    public void RemoveAllStartCards()
+    {
+        List<Transform> childsToDestroy = new List<Transform>();
+
+        foreach (Transform childCard in transform)
+        {
+            Card hasCompnent = childCard.GetComponent<Card>();
+            if (hasCompnent != null)
+            {
+                childsToDestroy.Add(childCard);
+             
+            }
+        }
+        foreach (Transform child in childsToDestroy)
+        {
+            DestroyImmediate(child.gameObject);
+        }
     }
 
     public void SetTheme(CardTheme theme)

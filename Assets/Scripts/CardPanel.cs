@@ -1,11 +1,13 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 
-public class CardPanel : MonoBehaviour
+public class CardPanel : MonoBehaviour//, //IDragHandler
 {
 
     [SerializeField] private Transform cardSlotPreFab;
@@ -15,10 +17,14 @@ public class CardPanel : MonoBehaviour
     private GridLayoutGroup cardSlotsGridLayoutGroup;
     private float cardSlotWidth;
 
+    private Transform cardSlots;
+
     private Transform selectedCardSlots;
     private Transform nonSelectedCardSlots;
 
     private CardSortOrder sortOrder;
+
+ 
 
 
     private void Awake()
@@ -26,6 +32,7 @@ public class CardPanel : MonoBehaviour
         // SortOrder = new CardSortOrder();
         sortOrder = CardSortOrder.CardType;
         InitCardSlotData();
+
 
     }
 
@@ -40,16 +47,42 @@ public class CardPanel : MonoBehaviour
 
     public void SetTheme(CardPanelThemeSO theme)
     {
-        if(theme != null)
+        if (theme != null)
         {
             transform.Find("background").GetComponent<Image>().sprite = theme.panelBackgroundSprite;
         }
     }
 
+    //public void OnDrag(PointerEventData eventData)
+    //{
+ 
+    //}
+
+    public void OnCardDrag(object sender, PointerEventArgs args)
+    {
+        MoveScrollViewHorizontaly(args.pointerData.delta.x);
+    }
+
+    public void OnCardSlotDrag(object sender, PointerEventArgs args)
+    {
+        MoveScrollViewHorizontaly(args.pointerData.delta.x);
+    }
+
+    private void MoveScrollViewHorizontaly(float horizontalVal)
+    {
+        RectTransform cardSlotTransform = cardSlots.GetComponent<RectTransform>();
+        Vector3 newPosition = new Vector3(horizontalVal, 0.0f, 0.0f);
+        cardSlotTransform.position = cardSlotTransform.position + newPosition;
+    }
+
+
+
+    #region CardSlotLogic
+
     private void InitCardSlotData()
     {
 
-        Transform cardSlots = transform.Find("cardSlotViewport").Find("cardSlots");
+        cardSlots = transform.Find("cardSlotViewport").Find("cardSlots");
         selectedCardSlots = cardSlots.Find("selected");
         nonSelectedCardSlots = cardSlots.Find("nonSelected");
 
@@ -62,6 +95,29 @@ public class CardPanel : MonoBehaviour
 
         selectedCardSlots.GetComponent<GridLayoutGroup>().spacing = new Vector2(cardSlotWidth + paddingOffset, 0.0f);
         nonSelectedCardSlots.GetComponent<GridLayoutGroup>().spacing = new Vector2(cardSlotWidth + paddingOffset, 0.0f);
+    }
+
+    private void InitNewCards()
+    {
+        List<Transform> cards = CardManager.Instance.GetCards();
+
+        foreach (Transform card in cards)
+        {
+            Transform newCardSlot = Instantiate(cardSlotPreFab, nonSelectedCardSlots.transform);
+            RectTransform rectTransCardSlot = newCardSlot.GetComponent<RectTransform>();
+            rectTransCardSlot.position = new Vector3(0, 0, 0);
+            rectTransCardSlot.anchoredPosition = new Vector2(0, 0);
+            newCardSlot.GetComponent<CardSlot>().OnCardSlotDrag += OnCardSlotDrag;
+            CardDescriptor test = card.GetComponent<Card>().GetData();
+
+            Transform newCard = Instantiate(card, new Vector3(0, 0, 0), Quaternion.identity, newCardSlot.transform); // Add to cardManager?
+            newCard.GetComponent<Card>().SetData(card.GetComponent<Card>().GetData());
+            newCard.GetComponent<Card>().OnCardDrag += OnCardDrag;
+            RectTransform rectTransCard = newCard.GetComponent<RectTransform>();
+            rectTransCard.position = new Vector3(0, 0, 0);
+            rectTransCard.anchoredPosition = new Vector2(0, 0);
+            //Update Card UI from ThemeManager
+        }
     }
 
     private void RemoveAllCardSlots()
@@ -84,6 +140,19 @@ public class CardPanel : MonoBehaviour
         }
     }
 
+    private void UpdateSlotsOffset()
+    {
+
+        int nrOfSlotsInSelected = GetNumberOfActiveCardSlotsInSelected();
+        int nrOfSlotsInNonSelected = GetNumberOfActiveCardSlotsInNonSelected();
+
+        float nonSelectedPanelOffset = ((nrOfSlotsInSelected) * (Mathf.CeilToInt(cardSlotWidth) + paddingOffset)) + (paddingOffset * 2);
+        cardSlotsGridLayoutGroup.spacing = new Vector2(nonSelectedPanelOffset, 0.0f);
+
+        int viewOffset = nrOfSlotsInNonSelected * Mathf.CeilToInt((cardSlotWidth + paddingOffset)) - paddingOffset * 6; //(left, right + middle seperator removal)
+        cardSlotsGridLayoutGroup.padding.left = viewOffset;
+
+    }
 
     public void SetSortOrder(CardSortOrder sortOrder)
     {
@@ -107,7 +176,7 @@ public class CardPanel : MonoBehaviour
                     foreach (Direction direction in directionTypes)
                     {
                         sortDictionary[type][direction] = new Dictionary<int, List<Transform>>();
-                        for (int i = GameConstants.minNumberOfMoves; i < GameConstants.maxNumberOfMoves; i++)
+                        for (int i = GameConstants.minNumberOfMoves; i <= GameConstants.maxNumberOfMoves; i++)
                             sortDictionary[type][direction][i] = new List<Transform>();
                     }
                 }
@@ -136,7 +205,7 @@ public class CardPanel : MonoBehaviour
                 {
                     foreach (Direction direction in directionTypes)
                     {
-                        for (int i = GameConstants.minNumberOfMoves; i < GameConstants.maxNumberOfMoves; i++)
+                        for (int i = GameConstants.minNumberOfMoves; i <= GameConstants.maxNumberOfMoves; i++)
                         {
                             foreach (Transform cardSlot in sortDictionary[type][direction][i])
                             {
@@ -153,29 +222,6 @@ public class CardPanel : MonoBehaviour
             case CardSortOrder.NumberOfMoves:
 
                 break;
-        }
-    }
-
-
-    private void InitNewCards()
-    {
-        List<Transform> cards = CardManager.Instance.GetCards();
-
-        foreach (Transform card in cards)
-        {
-            Transform newCardSlot = Instantiate(cardSlotPreFab, nonSelectedCardSlots.transform);
-            RectTransform rectTransCardSlot = newCardSlot.GetComponent<RectTransform>();
-            rectTransCardSlot.position = new Vector3(0, 0, 0);
-            rectTransCardSlot.anchoredPosition = new Vector2(0, 0);
-
-            CardDescriptor test = card.GetComponent<Card>().GetData();
-
-            Transform newCard = Instantiate(card, new Vector3(0, 0, 0), Quaternion.identity, newCardSlot.transform); // Add to cardManager?
-            newCard.GetComponent<Card>().SetData(card.GetComponent<Card>().GetData());
-            RectTransform rectTransCard = newCard.GetComponent<RectTransform>();
-            rectTransCard.position = new Vector3(0, 0, 0);
-            rectTransCard.anchoredPosition = new Vector2(0, 0);
-            //Update Card UI from ThemeManager
         }
     }
 
@@ -210,6 +256,7 @@ public class CardPanel : MonoBehaviour
         return returnValue;
     }
 
+    #region DebugFunctions
 
     public void MoveFirstChildFromSelectedToNonSelcted()
     {
@@ -244,54 +291,8 @@ public class CardPanel : MonoBehaviour
         UpdateSlotsOffset();
         SortNonSelectedCards();
     }
+    #endregion
+    #endregion
 
-    private void UpdateSlotsOffset()
-    {
-
-        int nrOfSlotsInSelected = GetNumberOfActiveCardSlotsInSelected();
-        int nrOfSlotsInNonSelected = GetNumberOfActiveCardSlotsInNonSelected();
-
-        float nonSelectedPanelOffset = ((nrOfSlotsInSelected) * (Mathf.CeilToInt(cardSlotWidth) + paddingOffset)) + (paddingOffset * 2);
-        cardSlotsGridLayoutGroup.spacing = new Vector2(nonSelectedPanelOffset, 0.0f);
-
-        int viewOffset = nrOfSlotsInNonSelected * Mathf.CeilToInt((cardSlotWidth + paddingOffset)) - paddingOffset * 6; //(left, right + middle seperator removal)
-        cardSlotsGridLayoutGroup.padding.left = viewOffset;
-
-    }
-
-    //public void SetPanelGUI(CardPanelSO cardPanelSO)
-    //{
-    //    this.cardPanelSO = cardPanelSO;
-    //    UpdatePanelGUI();
-    //}
-
-    //public void SetCardSlotGUI(CardSlotSO cardSlotSO)
-    //{
-    //    this.cardSlotSO = cardSlotSO;
-    //    UpdateCardSlotGUI();
-    //}
-
-    //void OnMouseClick()
-    //{
-    //    Debug.Log("Drag");
-    //}
-
-    //private void UpdatePanelGUI()
-    //{
-    //    Image backgroundImage = transform.Find("background").GetComponent<Image>();
-    //    backgroundImage.sprite = cardPanelSO.panelBackgroundSprite;
-    //}
-
-    //private void UpdateCardSlotGUI()
-    //{
-
-    //   foreach(Transform card in activeCardSlots)
-    //    {
-    //        card.GetComponent<CardSlot>().SetActiveGUI(cardSlotSO);
-    //    }
-
-    //    Image backgroundImage = transform.Find("background").GetComponent<Image>();
-    //    backgroundImage.sprite = cardPanelSO.panelBackgroundSprite;
-    //}
 
 }
