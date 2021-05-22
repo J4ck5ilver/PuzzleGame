@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler
+public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDragHandler, IEndDragHandler
 {
 
     [SerializeField]private int numberOfMoves;
@@ -14,8 +14,10 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler
     [SerializeField] private Direction direction;
 
 
-    public event EventHandler<PointerEventArgs> OnCardBeginDrag;
-    public event EventHandler<PointerEventArgs> OnCardDrag;
+    public event EventHandler<PanelEventArgs> CardDragEvent;
+    public event EventHandler<PanelEventArgs> CardClickedEvent;
+
+    private bool lockCardClick = false;
 
     public void SetData(CardDescriptor descriptor)
     {
@@ -58,13 +60,31 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler
     }
     public void OnPointerClick(PointerEventData pointerEventData)
     {
-        Debug.Log("Card" + gameObject.name.ToString() + " Clicked");
+        if(!lockCardClick)
+        {
+            PanelEventArgs data = new PanelEventArgs();
+            data.pointerData = pointerEventData;
+            data.senderTransform = transform;
+            CardClickedEvent?.Invoke(this, data);
+
+        }
     }
 
-    public void OnDrag(PointerEventData eventData)
+
+    public void OnDrag(PointerEventData pointerEventData)
     {
-        PointerEventArgs pointerData = new PointerEventArgs();
-        pointerData.pointerData = eventData;
-        OnCardDrag?.Invoke(this, pointerData);
+        PanelEventArgs data = new PanelEventArgs();
+        data.pointerData = pointerEventData;
+        CardDragEvent?.Invoke(this, data);
+    }
+
+    public void OnBeginDrag(PointerEventData pointerEventData)
+    {
+        lockCardClick = true;
+    }
+
+    public void OnEndDrag(PointerEventData pointerEventData)
+    {
+        lockCardClick = false;
     }
 }

@@ -8,7 +8,9 @@ using UnityEngine.EventSystems;
 public class CardSlot : MonoBehaviour, IDragHandler
 {
 
-    public event EventHandler<PointerEventArgs> OnCardSlotDrag;
+    public event EventHandler<PanelEventArgs> OnCardSlotDrag;
+
+    private bool isSelected = false;
 
     public Transform GetCard()
     {
@@ -25,10 +27,19 @@ public class CardSlot : MonoBehaviour, IDragHandler
         return returnValue;
     }
 
+    public void SetIsSelected(bool selected)
+    {
+        isSelected = selected;
+    }
+
+    public bool IsSelected()
+    {
+        return isSelected;
+    }
 
     public void OnDrag(PointerEventData eventData)
     {
-        PointerEventArgs pointerData = new PointerEventArgs();
+        PanelEventArgs pointerData = new PanelEventArgs();
         pointerData.pointerData = eventData;
         OnCardSlotDrag?.Invoke(this, pointerData);
     }

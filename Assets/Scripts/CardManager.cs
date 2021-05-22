@@ -7,7 +7,10 @@ public class CardManager : MonoBehaviour
 
     public static CardManager Instance { get; private set; }
 
-    private List<Transform> cards = new List<Transform>();
+    private List<Transform> startCards = new List<Transform>();
+
+    private List<Transform> cardsInPlay = new List<Transform>();
+
 
     private void Awake()
     {
@@ -22,7 +25,7 @@ public class CardManager : MonoBehaviour
             Card hasCompnent = childCard.GetComponent<Card>();
             if (hasCompnent != null)
             {
-                cards.Add(childCard);
+                startCards.Add(childCard);
             }
         }
     }
@@ -52,10 +55,18 @@ public class CardManager : MonoBehaviour
 
         // Loop all cards here
     }
-
-    public List<Transform> GetCards()
+    public void  AddToCardsInPlay(Transform cardToAdd)
     {
-        return cards;
+        cardsInPlay.Add(cardToAdd);
+    }
+
+    public List<Transform> GetStartCards()
+    {
+        return startCards;
+    }
+    public List<Transform> GetCardsInPlay()
+    {
+        return cardsInPlay;
     }
 
 

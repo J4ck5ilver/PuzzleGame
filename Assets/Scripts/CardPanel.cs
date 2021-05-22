@@ -29,10 +29,8 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
 
     private void Awake()
     {
-        // SortOrder = new CardSortOrder();
         sortOrder = CardSortOrder.CardType;
         InitCardSlotData();
-
 
     }
 
@@ -53,17 +51,46 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
         }
     }
 
-    //public void OnDrag(PointerEventData eventData)
-    //{
- 
-    //}
 
-    public void OnCardDrag(object sender, PointerEventArgs args)
+
+    public void OnCardClicked(object sender, PanelEventArgs args)
+    {
+ 
+        Debug.Log("Card" + sender.ToString() + "Is Clicked, //Panel");
+
+        Transform cardSlot = GetCarsSlotInNonSelectedWithCard(args.senderTransform);
+
+        if(cardSlot == null)
+        {
+            cardSlot = GetCarsSlotInSelectedWithCard(args.senderTransform);
+        }
+
+
+        if(cardSlot != null)
+        {
+            CardSlot slot = cardSlot.GetComponent<CardSlot>();
+     
+            if(slot.IsSelected())
+            {
+                slot.SetIsSelected(false);
+                cardSlot.SetParent(nonSelectedCardSlots.transform);
+                SortNonSelectedCards();
+            }
+            else
+            {
+                slot.SetIsSelected(true);
+                cardSlot.SetParent(selectedCardSlots.transform);
+            }
+            UpdateSlotsOffset();
+        }
+
+    }
+    public void OnCardDrag(object sender, PanelEventArgs args)
     {
         MoveScrollViewHorizontaly(args.pointerData.delta.x);
     }
 
-    public void OnCardSlotDrag(object sender, PointerEventArgs args)
+    public void OnCardSlotDrag(object sender, PanelEventArgs args)
     {
         MoveScrollViewHorizontaly(args.pointerData.delta.x);
     }
@@ -77,7 +104,12 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
 
 
 
+
+
     #region CardSlotLogic
+
+
+
 
     private void InitCardSlotData()
     {
@@ -99,7 +131,7 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
 
     private void InitNewCards()
     {
-        List<Transform> cards = CardManager.Instance.GetCards();
+        List<Transform> cards = CardManager.Instance.GetStartCards();
 
         foreach (Transform card in cards)
         {
@@ -108,11 +140,14 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
             rectTransCardSlot.position = new Vector3(0, 0, 0);
             rectTransCardSlot.anchoredPosition = new Vector2(0, 0);
             newCardSlot.GetComponent<CardSlot>().OnCardSlotDrag += OnCardSlotDrag;
+            newCardSlot.GetComponent<CardSlot>().SetIsSelected(false);
             CardDescriptor test = card.GetComponent<Card>().GetData();
 
-            Transform newCard = Instantiate(card, new Vector3(0, 0, 0), Quaternion.identity, newCardSlot.transform); // Add to cardManager?
+            Transform newCard = Instantiate(card, new Vector3(0, 0, 0), Quaternion.identity, newCardSlot.transform);
+            CardManager.Instance.AddToCardsInPlay(newCard);
             newCard.GetComponent<Card>().SetData(card.GetComponent<Card>().GetData());
-            newCard.GetComponent<Card>().OnCardDrag += OnCardDrag;
+            newCard.GetComponent<Card>().CardDragEvent += OnCardDrag;
+            newCard.GetComponent<Card>().CardClickedEvent += OnCardClicked;
             RectTransform rectTransCard = newCard.GetComponent<RectTransform>();
             rectTransCard.position = new Vector3(0, 0, 0);
             rectTransCard.anchoredPosition = new Vector2(0, 0);
@@ -253,6 +288,64 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
                 returnValue++;
             }
         }
+        return returnValue;
+    }
+
+
+    private Transform GetCarsSlotInNonSelectedWithCard(Transform cardToFind)
+    {
+        Transform returnValue = null;
+
+        foreach (Transform cardSlot in nonSelectedCardSlots)
+        {
+            if (cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>().GetCard().transform == cardToFind)
+            {
+                returnValue = cardSlot;
+                break;
+            }
+        }
+        return returnValue;
+    }
+
+    private Transform GetCarsSlotInSelectedWithCard(Transform cardToFind)
+    {
+        Transform returnValue = null;
+
+        foreach (Transform cardSlot in selectedCardSlots)
+        {
+            if (cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>().GetCard().transform == cardToFind)
+            {
+                returnValue = cardSlot;
+                break;
+            }
+        }
+        return returnValue;
+    }
+
+    private Transform FindCardSlotWithCard(Transform cardToFind)
+    {
+        Transform returnValue = null;
+        
+        foreach (Transform cardSlot in nonSelectedCardSlots)
+        {
+            if (cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>().GetCard().transform == cardToFind)
+            {
+                returnValue = cardSlot;
+                break;
+            }
+        }
+        if (returnValue == null)
+        {
+            foreach (Transform cardSlot in selectedCardSlots)
+            {
+                if (cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>().GetCard().transform == cardToFind)
+                {
+                    returnValue = cardSlot;
+                    break;
+                }
+            }
+        }
+
         return returnValue;
     }
 

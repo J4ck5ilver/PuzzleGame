@@ -44,9 +44,10 @@ public enum CardPanelTheme
     Wood
 }
 
-public class PointerEventArgs : EventArgs
+public class PanelEventArgs : EventArgs
 {
-    public PointerEventData pointerData;
+    public Transform senderTransform = null;
+    public PointerEventData pointerData = null;
 }
 
 public static class GameConstants
