@@ -25,10 +25,16 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
         cardType = descriptor.type;
         direction = descriptor.direction;
         UpdateVisuals();
+        CardThemeSO theme = AssetManager.Instance.GetCardTheme(ThemeManager.Instance.GetCurrentCardTheme());
+        SetTheme(theme);
     }
+
+    
 
     private void UpdateVisuals()
     {
+
+        
         TextMeshProUGUI numberOfMovesText = transform.Find("numberOfMovesSprite").Find("text").GetComponent<TextMeshProUGUI>();
         numberOfMovesText.text = Mathf.Clamp(numberOfMoves, GameConstants.minNumberOfMoves, GameConstants.maxNumberOfMoves).ToString();
 
@@ -55,7 +61,7 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
     {
         if (theme != null)
         {
-
+            transform.Find("background").GetComponent<Image>().sprite = theme.backgroundSprite;
         }
     }
     public void OnPointerClick(PointerEventData pointerEventData)

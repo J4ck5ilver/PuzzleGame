@@ -30,6 +30,7 @@ public class CardSlot : MonoBehaviour, IDragHandler
     public void SetIsSelected(bool selected)
     {
         isSelected = selected;
+        UpdateVisuals();
     }
 
     public bool IsSelected()
@@ -37,11 +38,34 @@ public class CardSlot : MonoBehaviour, IDragHandler
         return isSelected;
     }
 
+    private void UpdateVisuals()
+    {
+        Image backgroundImage = transform.Find("background").GetComponent<Image>();
+        if (isSelected)
+        {
+            backgroundImage.color = Color.green;
+        }
+        else
+        {
+            backgroundImage.color = Color.red;
+        }
+    }
+
     public void OnDrag(PointerEventData eventData)
     {
         PanelEventArgs pointerData = new PanelEventArgs();
         pointerData.pointerData = eventData;
         OnCardSlotDrag?.Invoke(this, pointerData);
+    }
+
+
+    public void SetTheme(CardSlotThemeSO theme)
+    {
+        if (theme != null)
+        {
+            transform.Find("background").GetComponent<Image>().sprite = theme.backgroundSprite;
+            UpdateVisuals();
+        }
     }
 
 

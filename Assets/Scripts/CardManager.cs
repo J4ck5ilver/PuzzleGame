@@ -53,7 +53,17 @@ public class CardManager : MonoBehaviour
     {
         CardThemeSO cardTheme = AssetManager.Instance.GetCardTheme(theme);
 
-        // Loop all cards here
+
+        foreach(Transform startCard in startCards)
+        {
+            startCard.GetComponent<Card>().SetTheme(cardTheme);
+        }
+
+        foreach(Transform cardInPlay in cardsInPlay)
+        {
+            cardInPlay.GetComponent<Card>().SetTheme(cardTheme);
+        }
+
     }
     public void  AddToCardsInPlay(Transform cardToAdd)
     {

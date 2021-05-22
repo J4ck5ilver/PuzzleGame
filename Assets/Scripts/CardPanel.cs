@@ -40,6 +40,11 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
         InitNewCards();
         UpdateSlotsOffset();
         SortNonSelectedCards();
+
+
+        CardPanelThemeSO theme = AssetManager.Instance.GetCardPanelTheme(ThemeManager.Instance.GetCurrentPanelTheme());
+        SetTheme(theme);
+
         //UpdateUIFunction() // from themeManager
     }
 
@@ -48,6 +53,7 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
         if (theme != null)
         {
             transform.Find("background").GetComponent<Image>().sprite = theme.panelBackgroundSprite;
+            SetThemeForCardSlots(theme.cardSlotTheme);
         }
     }
 
@@ -56,8 +62,6 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
     public void OnCardClicked(object sender, PanelEventArgs args)
     {
  
-        Debug.Log("Card" + sender.ToString() + "Is Clicked, //Panel");
-
         Transform cardSlot = GetCarsSlotInNonSelectedWithCard(args.senderTransform);
 
         if(cardSlot == null)
@@ -136,18 +140,23 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
         foreach (Transform card in cards)
         {
             Transform newCardSlot = Instantiate(cardSlotPreFab, nonSelectedCardSlots.transform);
+
             RectTransform rectTransCardSlot = newCardSlot.GetComponent<RectTransform>();
             rectTransCardSlot.position = new Vector3(0, 0, 0);
             rectTransCardSlot.anchoredPosition = new Vector2(0, 0);
-            newCardSlot.GetComponent<CardSlot>().OnCardSlotDrag += OnCardSlotDrag;
-            newCardSlot.GetComponent<CardSlot>().SetIsSelected(false);
-            CardDescriptor test = card.GetComponent<Card>().GetData();
+
+            CardSlot cardSlotComponent = newCardSlot.GetComponent<CardSlot>();
+            cardSlotComponent.OnCardSlotDrag += OnCardSlotDrag;
+            cardSlotComponent.SetIsSelected(false);
 
             Transform newCard = Instantiate(card, new Vector3(0, 0, 0), Quaternion.identity, newCardSlot.transform);
             CardManager.Instance.AddToCardsInPlay(newCard);
-            newCard.GetComponent<Card>().SetData(card.GetComponent<Card>().GetData());
-            newCard.GetComponent<Card>().CardDragEvent += OnCardDrag;
-            newCard.GetComponent<Card>().CardClickedEvent += OnCardClicked;
+
+            Card cardComponent = newCard.GetComponent<Card>();
+            cardComponent.SetData(card.GetComponent<Card>().GetData());
+            cardComponent.GetComponent<Card>().CardDragEvent += OnCardDrag;
+            cardComponent.GetComponent<Card>().CardClickedEvent += OnCardClicked;
+
             RectTransform rectTransCard = newCard.GetComponent<RectTransform>();
             rectTransCard.position = new Vector3(0, 0, 0);
             rectTransCard.anchoredPosition = new Vector2(0, 0);
@@ -322,26 +331,26 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
         return returnValue;
     }
 
-    private Transform FindCardSlotWithCard(Transform cardToFind)
+    private Transform SetThemeForCardSlots(CardSlotThemeSO theme)
     {
         Transform returnValue = null;
         
         foreach (Transform cardSlot in nonSelectedCardSlots)
         {
-            if (cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>().GetCard().transform == cardToFind)
+            CardSlot hasComponent = cardSlot.GetComponent<CardSlot>();
+            if (cardSlot.gameObject.activeInHierarchy && hasComponent != null)
             {
-                returnValue = cardSlot;
-                break;
+                hasComponent.SetTheme(theme);
             }
         }
         if (returnValue == null)
         {
             foreach (Transform cardSlot in selectedCardSlots)
             {
-                if (cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>().GetCard().transform == cardToFind)
+                CardSlot hasComponent = cardSlot.GetComponent<CardSlot>();
+                if (cardSlot.gameObject.activeInHierarchy && hasComponent != null)
                 {
-                    returnValue = cardSlot;
-                    break;
+                    hasComponent.SetTheme(theme);
                 }
             }
         }

@@ -31,8 +31,6 @@ public class ThemeManager : MonoBehaviour
         {
             SetCardTheme(StartCardTheme);
         }
-
-        
     }
 
     public void SetCardTheme(CardTheme cardTheme)
@@ -46,4 +44,16 @@ public class ThemeManager : MonoBehaviour
         currentPanelTheme = StartPanelTheme;
         CardPanelManager.Instance.SetTheme(currentPanelTheme);
     }
+
+    public CardPanelTheme GetCurrentPanelTheme()
+    {
+        return currentPanelTheme;
+    }
+
+    public CardTheme GetCurrentCardTheme()
+    {
+        return currentCardTheme;
+    }
+
+
 }
