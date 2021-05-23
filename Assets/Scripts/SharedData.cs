@@ -48,7 +48,8 @@ public enum CardPanelState
 {
     Play,
     Select,
-    Reset
+    Reset,
+    NextStep
 }
 
 public class PanelEventArgs : EventArgs

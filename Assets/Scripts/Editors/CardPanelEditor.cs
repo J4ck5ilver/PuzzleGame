@@ -36,5 +36,15 @@ public class CardPanelEditor : Editor
         {
             cardPanel.SetState(CardPanelState.Reset);
         }
+
+        if (GUILayout.Button("Next Step"))
+        {
+            cardPanel.SetState(CardPanelState.NextStep);
+        }
+        if (GUILayout.Button("Next Card"))
+        {
+            cardPanel.NextCard();
+        }
+     
     }
 }

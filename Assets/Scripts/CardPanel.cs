@@ -19,16 +19,21 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     private Transform selectionCardSlots;
 
+    private Transform currentCardInPlay;
+
     private Transform outputCardSlot;
     private Transform selectedCardSlots;
     private Transform nonSelectedCardSlots;
     private Transform movingCardSeparator;
 
-
+    private Transform buttonTransform;
 
     private CardSortOrder sortOrder;
 
     private CardPanelState currentState;
+
+    private bool scrollingEnabled = true;
+    private bool carSelectionEnabled = true;
 
 
 
@@ -38,16 +43,11 @@ public class CardPanel : MonoBehaviour, IDragHandler
         currentState = CardPanelState.Select;
         InitCardSlotData();
 
-        Transform buttonTransform = transform.Find("playButton");
+        buttonTransform = transform.Find("playButton");
         PlayButton component = buttonTransform.GetComponent<PlayButton>();
         component.OnClick += OnPlayButtonClicked;
 
 
-    }
-
-    private void OnPlayButtonClicked(object sender, EventArgs e)
-    {
-        SetState(CardPanelState.Play);
     }
 
     private void Start()
@@ -77,21 +77,24 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     public void OnCardClicked(object sender, PanelEventArgs args)
     {
-        CardSlot cardSlot = args.senderTransform.parent.GetComponent<CardSlot>();
+        if (carSelectionEnabled)
+        {
 
-        if (cardSlot.IsSelected())
-        {
-            cardSlot.SetIsSelected(false);
-            cardSlot.transform.SetParent(nonSelectedCardSlots.transform);
-            SortNonSelectedCards();
+            CardSlot cardSlot = args.senderTransform.parent.GetComponent<CardSlot>();
+            if (cardSlot.IsSelected())
+            {
+                cardSlot.SetIsSelected(false);
+                cardSlot.transform.SetParent(nonSelectedCardSlots.transform);
+                SortNonSelectedCards();
+            }
+            else
+            {
+                cardSlot.SetIsSelected(true);
+                cardSlot.transform.SetParent(selectedCardSlots.transform);
+            }
+            UpdateSlotsOffset();
+            UpdateMovingCardSeparator();
         }
-        else
-        {
-            cardSlot.SetIsSelected(true);
-            cardSlot.transform.SetParent(selectedCardSlots.transform);
-        }
-        UpdateSlotsOffset();
-        UpdateMovingCardSeparator();
 
     }
 
@@ -109,16 +112,60 @@ public class CardPanel : MonoBehaviour, IDragHandler
         MoveScrollViewHorizontaly(args.pointerData.delta.x);
     }
 
-    private void MoveScrollViewHorizontaly(float horizontalVal)
+    private void OnPlayButtonClicked(object sender, EventArgs e)
     {
-        RectTransform cardSlotTransform = selectionCardSlots.GetComponent<RectTransform>();
-        Vector3 newPosition = new Vector3(horizontalVal, 0.0f, 0.0f);
-        cardSlotTransform.position = cardSlotTransform.position + newPosition;
+        if (HasSelectedCards())
+        {
+            SetState(CardPanelState.Play);
+        }
+
+    }
+
+    private bool HasSelectedCards()
+    {
+        bool returnvalue = false;
+        foreach (Transform cardSlot in selectedCardSlots)
+        {
+            if (cardSlot.GetComponent<CardSlot>() != null && cardSlot.gameObject.activeInHierarchy)
+            {
+                returnvalue = true;
+                break;
+            }
+        }
+        return returnvalue;
     }
 
 
 
+
     #endregion
+
+
+    private void MoveScrollViewHorizontaly(float horizontalVal)
+    {
+        if (scrollingEnabled)
+        {
+            RectTransform cardSlotTransform = selectionCardSlots.GetComponent<RectTransform>();
+            Vector3 newPosition = new Vector3(horizontalVal, 0.0f, 0.0f);
+            cardSlotTransform.position = cardSlotTransform.position + newPosition;
+        }
+    }
+
+    private void EnableScrolling(bool state)
+    {
+        scrollingEnabled = state;
+        transform.GetComponent<ScrollRect>().enabled = state;
+    }
+    private void EnableCardSelection(bool state)
+    {
+        carSelectionEnabled = state;
+    }
+    private void EnablePlayButton(bool state)
+    {
+        buttonTransform.GetComponent<PlayButton>().enabled = state;
+        buttonTransform.gameObject.SetActive(state);
+    }
+
 
 
     #region CardSlotLogic
@@ -147,21 +194,123 @@ public class CardPanel : MonoBehaviour, IDragHandler
         nonSelectedCardSlots.GetComponent<GridLayoutGroup>().spacing = new Vector2(cardSlotWidth + paddingOffset, 0.0f);
     }
 
+
+    public void NextCard()
+    {
+        bool noMoreCards = true;
+
+        foreach (Transform cardSlot in selectedCardSlots)
+        {
+            noMoreCards = true;
+            if (cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>() != null)
+            {
+
+                if(currentCardInPlay != null)
+                {
+                    DestroyImmediate(currentCardInPlay.gameObject);
+                }
+
+                currentCardInPlay = Instantiate(cardSlot.GetComponent<CardSlot>().GetCard(), outputCardSlot);
+                cardSlot.gameObject.SetActive(false);
+
+                RectTransform rectTransCard = currentCardInPlay.GetComponent<RectTransform>();
+                rectTransCard.position = new Vector3(0, 0, 0);
+                rectTransCard.anchoredPosition = new Vector2(0, 0);
+                rectTransCard.anchoredPosition3D = new Vector3(0, 0, 0);
+
+                noMoreCards = false;
+                break;
+            }
+        }
+
+        if(noMoreCards && currentCardInPlay != null)
+        {
+            DestroyImmediate(currentCardInPlay.gameObject);
+            currentCardInPlay = null;
+        }
+
+        UpdateSlotsOffset();
+        UpdateMovingCardSeparator();
+    }
+
+
     public void SetState(CardPanelState state)
     {
         switch (state)
         {
             case CardPanelState.Play:
-                Debug.Log("Set To PlayState");
+                currentState = state;
+
+                //Vector3 oldPosition = selectionCardSlots.GetComponent<RectTransform>().position;
+                EnableScrolling(false);
+                EnablePlayButton(false);
+                EnableCardSelection(false);
+                NextCard();
+                //selectionCardSlots.GetComponent<RectTransform>().position = new Vector3(0.0f, oldPosition.y, oldPosition.z);
+                // UpdateSlotsOffset();
+
+                Vector3 oldPosition = selectionCardSlots.GetComponent<RectTransform>().position;
+                RectTransform rectTransform = selectionCardSlots.GetComponent<RectTransform>();
+                rectTransform.position = new Vector3(0.0f, oldPosition.y, oldPosition.z);
+                rectTransform.anchoredPosition = new Vector2(0.0f, 0.0f);
+                rectTransform.anchoredPosition3D  = new Vector3(0.0f, 0.0f, 0.0f);
                 break;
 
             case CardPanelState.Reset:
+
+                EnableScrolling(true);
+                EnablePlayButton(true);
+                EnableCardSelection(true);
+                ActivateAllDisabledSlotsInSelectedGroup();
+                UpdateSlotsOffset();
+                SortNonSelectedCards();
 
                 break;
 
             case CardPanelState.Select:
 
+
                 break;
+            case CardPanelState.NextStep:
+                EnableScrolling(true);
+                EnablePlayButton(true);
+                EnableCardSelection(true);
+                MoveAllDisabledSlotsInSelectedGroupToNonSelected();
+                UpdateSlotsOffset();
+                SortNonSelectedCards();
+                break;
+        }
+    }
+
+    private void MoveAllDisabledSlotsInSelectedGroupToNonSelected()
+    {
+        List<Transform> slotsToMove = new List<Transform>();
+
+        foreach (Transform cardSlot in selectedCardSlots)
+        {
+            if (!cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>() != null)
+            {
+                slotsToMove.Add(cardSlot);
+            }
+        }
+
+        foreach (Transform cardSlot in slotsToMove)
+        {
+            cardSlot.GetComponent<CardSlot>().SetIsSelected(false);
+            cardSlot.transform.SetParent(nonSelectedCardSlots.transform);
+        }
+        SortNonSelectedCards();
+
+    }
+
+    private void ActivateAllDisabledSlotsInSelectedGroup()
+    {
+        foreach (Transform cardSlot in selectedCardSlots)
+        {
+            if (!cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>() != null)
+            {
+                cardSlot.gameObject.SetActive(true);
+            }
         }
     }
 
@@ -254,7 +403,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
             }
         }
 
-        if(cardSlottransform != null)
+        if (cardSlottransform != null)
         {
             movingCardSeparator.SetParent(cardSlottransform.transform);
             movingCardSeparator.position = new Vector3(0.0f, 0.0f, 0.0f);
@@ -263,14 +412,14 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
             float xOffset = (cardSlottransform.GetComponent<CardSlot>().GetWidth() / 2.0f) + ((float)paddingOffset * 1.5f);
 
-            if(cardSlottransform.GetComponent<CardSlot>().IsSelected())
+            if (cardSlottransform.GetComponent<CardSlot>().IsSelected())
             {
                 xOffset *= -1;
             }
 
             separatorRectTransform.anchoredPosition = new Vector2(0.0f, 0.0f);
             separatorRectTransform.anchoredPosition3D = new Vector3(0.0f, 0.0f, 0.0f);
-            separatorRectTransform.localPosition = new Vector3(xOffset,0.0f,0.0f);
+            separatorRectTransform.localPosition = new Vector3(xOffset, 0.0f, 0.0f);
         }
 
 
