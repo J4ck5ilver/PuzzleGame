@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 
-public class CardPanel : MonoBehaviour//, //IDragHandler
+public class CardPanel : MonoBehaviour, IDragHandler
 {
 
     [SerializeField] private Transform cardSlotPreFab;
@@ -17,8 +17,9 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
     private GridLayoutGroup cardSlotsGridLayoutGroup;
     private float cardSlotWidth;
 
-    private Transform cardSlots;
+    private Transform selectionCardSlots;
 
+    private Transform outputCardSlot;
     private Transform selectedCardSlots;
     private Transform nonSelectedCardSlots;
 
@@ -89,9 +90,31 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
         }
 
     }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        //RectTransform outputPanelTransform = transform.Find("cardSlotViewport").Find("outputPanelBackground").GetComponent<RectTransform>();
+        //Vector3 newPosition = new Vector3(eventData.delta.x, 0.0f, 0.0f);
+        //outputPanelTransform.position = outputPanelTransform.position + newPosition;
+        MoveScrollViewHorizontaly(eventData.delta.x);
+    }
     public void OnCardDrag(object sender, PanelEventArgs args)
     {
         MoveScrollViewHorizontaly(args.pointerData.delta.x);
+
+
+        //RectTransform background = transform.Find("background").GetComponent<RectTransform>();
+        //RectTransform outputPanelTransform = transform.Find("cardSlotViewport").Find("outputPanelBackground").GetComponent<RectTransform>();
+        //float moveX = 0.0f;
+        //if(selectionCardSlots.GetComponent<RectTransform>().position.x > 0.0f)
+        //{
+        //    moveX = args.pointerData.delta.x;
+        //}
+
+        //Vector3 newPosition = new Vector3(moveX, 0.0f, 0.0f);
+        //outputPanelTransform.position = outputPanelTransform.position + newPosition;
+        //background.position = background.position + newPosition;
+
     }
 
     public void OnCardSlotDrag(object sender, PanelEventArgs args)
@@ -101,7 +124,7 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
 
     private void MoveScrollViewHorizontaly(float horizontalVal)
     {
-        RectTransform cardSlotTransform = cardSlots.GetComponent<RectTransform>();
+        RectTransform cardSlotTransform = selectionCardSlots.GetComponent<RectTransform>();
         Vector3 newPosition = new Vector3(horizontalVal, 0.0f, 0.0f);
         cardSlotTransform.position = cardSlotTransform.position + newPosition;
     }
@@ -118,11 +141,12 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
     private void InitCardSlotData()
     {
 
-        cardSlots = transform.Find("cardSlotViewport").Find("cardSlots");
-        selectedCardSlots = cardSlots.Find("selected");
-        nonSelectedCardSlots = cardSlots.Find("nonSelected");
+        selectionCardSlots = transform.Find("cardSlotViewport").Find("selectionCardSlots");
+        selectedCardSlots = selectionCardSlots.Find("selected");
+        nonSelectedCardSlots = selectionCardSlots.Find("nonSelected");
+        outputCardSlot = selectionCardSlots.Find("outputCardSlot");
 
-        cardSlotsGridLayoutGroup = cardSlots.GetComponent<GridLayoutGroup>();
+        cardSlotsGridLayoutGroup = selectionCardSlots.GetComponent<GridLayoutGroup>();
 
         cardSlotWidth = cardSlotPreFab.GetComponent<RectTransform>().rect.width;
 
@@ -393,6 +417,8 @@ public class CardPanel : MonoBehaviour//, //IDragHandler
         UpdateSlotsOffset();
         SortNonSelectedCards();
     }
+
+
     #endregion
     #endregion
 
