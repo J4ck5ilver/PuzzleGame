@@ -11,7 +11,10 @@ public class CardSlot : MonoBehaviour, IDragHandler
     public event EventHandler<PanelEventArgs> OnCardSlotDrag;
 
     private bool isSelected = false;
-
+    public float GetWidth()
+    {
+        return transform.GetComponent<LayoutElement>().preferredWidth;
+    }
     public Transform GetCard()
     {
         Transform returnValue = null;

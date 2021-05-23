@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 565ca97bfc85df345938a8fbc2b28979, type: 3}
   m_Name: CardPanelThemeListSO
   m_EditorClassIdentifier: 
-  list: []
+  list:
+  - {fileID: 11400000, guid: cacd10fc271ed5c4f8b8530ee809f293, type: 2}

@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4794fb40c267af4c9d761344689c483, type: 3}
   m_Name: Wood
   m_EditorClassIdentifier: 
-  backgroundSprite: {fileID: 0}
+  backgroundSprite: {fileID: 21300000, guid: 363a463ec2c348049bf470ab79243ac7, type: 3}
+  theme: 1

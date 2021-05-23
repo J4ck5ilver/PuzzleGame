@@ -30,5 +30,11 @@ public class CardPanelEditor : Editor
         {
             cardPanel.MoveFirstChildFromNonSelctedToSelected();
         }
+
+
+        if (GUILayout.Button("Reset State"))
+        {
+            cardPanel.SetState(CardPanelState.Reset);
+        }
     }
 }

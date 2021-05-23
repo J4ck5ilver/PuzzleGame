@@ -44,6 +44,13 @@ public enum CardPanelTheme
     Wood
 }
 
+public enum CardPanelState
+{
+    Play,
+    Select,
+    Reset
+}
+
 public class PanelEventArgs : EventArgs
 {
     public Transform senderTransform = null;
