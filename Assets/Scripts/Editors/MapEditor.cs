@@ -2,17 +2,20 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
+
+
 public class MapEditor : EditorWindow
 {
-    bool placeMode = false;
-    private float GridSize = 1.0f;
+    [SerializeField] bool placeMode = false;
+    [SerializeField] private float gridSize = 1.0f;
+    [SerializeField] private bool useGrid = true;
+    [SerializeField] private bool useRayGrid = false;
 
     [SerializeField] private List<GameObject> palette = new List<GameObject>();
     [SerializeField] private int paletteIndex;
-    [SerializeField] private int placementLayer  = 0;
-    [SerializeField] private bool useGrid  = true;
-
-    private string path = "Assets/Editor/Resources/Palette";
+    [SerializeField] private int placementLayer = 0;
+    [SerializeField] Transform outputTransform;
+    [SerializeField] private string path = "Assets/Editor/Resources/Palette";
 
     [MenuItem("MapEditor/MapEditor")]
     private static void ShowWindow()
@@ -22,9 +25,22 @@ public class MapEditor : EditorWindow
 
     private void OnGUI()
     {
+
+
         placeMode = GUILayout.Toggle(placeMode, "Start Placing", "Button", GUILayout.Height(60.0f));
-        placeMode = EditorGUILayout.Toggle("Use Grid",useGrid);
+        useGrid = EditorGUILayout.Toggle("Use Grid", useGrid);
+        useRayGrid = EditorGUILayout.Toggle("Use Ray Grid", useRayGrid);
         placementLayer = EditorGUILayout.IntField("Grid Layer:", placementLayer);
+        outputTransform = EditorGUILayout.ObjectField("OutputTransform", outputTransform, typeof(Transform), true) as Transform;
+
+
+
+        if (useGrid && useRayGrid)
+        {
+            useGrid = !useGrid;
+            useRayGrid = !useRayGrid;
+        }
+      
         // Get a list of previews, one for each of our prefabs
         List<GUIContent> paletteIcons = new List<GUIContent>();
 
@@ -36,29 +52,34 @@ public class MapEditor : EditorWindow
         }
 
         // Display the grid
-        paletteIndex = GUILayout.SelectionGrid(paletteIndex, paletteIcons.ToArray(), 6); 
+        paletteIndex = GUILayout.SelectionGrid(paletteIndex, paletteIcons.ToArray(), 6);
     }
 
-    private void OnSceneGUI(SceneView sceneView) 
+    private void OnSceneGUI(SceneView sceneView)
     {
-        if(placeMode)
+        if (placeMode)
         {
-          //  Vector2 cellCenter = GetSelectedGridCell();
-            Vector3 gridCenter = GetSelectedGridPosition();
+            //  Vector2 cellCenter = GetSelectedGridCell();
+            Vector3 hoverPos = GetHoverPosition();
 
+            if (useRayGrid || useGrid)
+            {
+                DisplayVisualHelp(hoverPos);
+            }
 
-            DisplayVisualHelp(gridCenter);
-            HandleSceneViewInputs(gridCenter);
+            HandleSceneViewInputs(hoverPos);
 
             // Refresh the view
             sceneView.Repaint();
         }
     }
-    private Vector3 GetSelectedGridPosition()
+    private Vector3 GetHoverPosition()
     {
 
-        Vector3 returnValue = new Vector3(0.0f, 0.0f, 0.0f);
+        Vector3 returnValue = new Vector3(0.0f, -2.0f, 0.0f);
         Ray guiRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+
+
 
         Vector3 origin = guiRay.origin;
         Vector3 mouseRay = guiRay.direction;
@@ -66,25 +87,78 @@ public class MapEditor : EditorWindow
 
         float planeDotCheck = Vector3.Dot(planeNormal, mouseRay.normalized);
 
-        if(planeDotCheck < 0.0f && placementLayer < origin.y)
+        if (placementLayer < origin.y)
         {
-     
-            float dot1 = Vector3.Dot(planeNormal, guiRay.origin) - (float)placementLayer;
-            float dot2 = Vector3.Dot(planeNormal, guiRay.direction);
 
-            float VectorTimesVal = dot1 / (dot2 * -1.0f);
 
-            returnValue = guiRay.origin + (guiRay.direction * VectorTimesVal);
-            returnValue.x = Mathf.RoundToInt(returnValue.x);
-            returnValue.y = Mathf.RoundToInt(returnValue.y);
-            returnValue.z = Mathf.RoundToInt(returnValue.z);
+            if (useGrid)
+            {
+                if (planeDotCheck < 0.0f)
+                {
+                    float dot1 = Vector3.Dot(planeNormal, guiRay.origin) - (float)placementLayer;
+                    float dot2 = Vector3.Dot(planeNormal, guiRay.direction);
 
+                    float VectorTimesVal = dot1 / (dot2 * -1.0f);
+
+                    returnValue = guiRay.origin + (guiRay.direction * VectorTimesVal);
+
+
+                    returnValue.x = Mathf.RoundToInt(returnValue.x);
+                    returnValue.y = Mathf.RoundToInt(returnValue.y);
+                    returnValue.z = Mathf.RoundToInt(returnValue.z);
+                }
+            }
+            else
+            {
+
+
+
+                RaycastHit[] hits = Physics.RaycastAll(origin, mouseRay, 100.0f);
+                RaycastHit closestTarget = new RaycastHit();
+                bool targetHit = false;
+                float lastDistance = 1000.0f;
+
+                foreach (RaycastHit hit in hits)
+                {
+                    if (hit.transform.GetComponent<Cube>() != null)
+                    {
+                        Vector3 vectorFromOrigin = hit.transform.position - origin;
+
+                        if (vectorFromOrigin.magnitude < lastDistance)
+                        {
+                            targetHit = true;
+                            closestTarget = hit;
+                            lastDistance = vectorFromOrigin.magnitude;
+                        }
+
+                    }
+                }
+
+                if (targetHit)
+                {
+
+                    if (useRayGrid)
+                    {
+
+                        int x = (int)closestTarget.transform.position.x;
+                        int y = (int)closestTarget.transform.position.y;
+                        int z = (int)closestTarget.transform.position.z;
+
+                        returnValue = new Vector3(x, y, z);
+                        returnValue += closestTarget.normal * gridSize;
+                    }
+                    else
+                    {
+                        returnValue = closestTarget.point;
+                    }
+                }
+
+            }
         }
-
         return returnValue;
     }
 
-    private void HandleSceneViewInputs(Vector3 cellCenter)
+    private void HandleSceneViewInputs(Vector3 spawnPosition)
     {
         // Filter the left click so that we can't select objects in the scene
         if (Event.current.type == EventType.Layout)
@@ -94,12 +168,15 @@ public class MapEditor : EditorWindow
 
         if (paletteIndex < palette.Count && Event.current.type == EventType.MouseDown && Event.current.button == 0)
         {
-            // Create the prefab instance while keeping the prefab link
-            GameObject prefab = palette[paletteIndex];
-            GameObject gameObject = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
-            gameObject.transform.position = cellCenter;
 
-            // Allow the use of Undo (Ctrl+Z, Ctrl+Y).
+            GameObject prefab = palette[paletteIndex];
+            GameObject gameObject = PrefabUtility.InstantiatePrefab(prefab, outputTransform) as GameObject;
+
+            gameObject.transform.position = spawnPosition;
+
+
+
+
             Undo.RegisterCreatedObjectUndo(gameObject, "");
         }
     }
@@ -108,14 +185,14 @@ public class MapEditor : EditorWindow
     {
 
         // Vertices of our square
-        Vector3 topLeftFront        = gridCenter + Vector3.left * GridSize * 0.5f + Vector3.up * GridSize * 0.5f + Vector3.forward * GridSize * -0.5f;
-        Vector3 topRightFront       = gridCenter - Vector3.left * GridSize * 0.5f + Vector3.up * GridSize * 0.5f + Vector3.forward * GridSize * -0.5f;
-        Vector3 bottomLeftFront     = gridCenter + Vector3.left * GridSize * 0.5f - Vector3.up * GridSize * 0.5f + Vector3.forward * GridSize * -0.5f;
-        Vector3 bottomRightFront    = gridCenter - Vector3.left * GridSize * 0.5f - Vector3.up * GridSize * 0.5f + Vector3.forward * GridSize * -0.5f;
-        Vector3 topLeftBack         = gridCenter + Vector3.left * GridSize * 0.5f + Vector3.up * GridSize * 0.5f + Vector3.forward * GridSize * 0.5f;
-        Vector3 topRightBack        = gridCenter - Vector3.left * GridSize * 0.5f + Vector3.up * GridSize * 0.5f + Vector3.forward * GridSize * 0.5f;
-        Vector3 bottomLeftBack      = gridCenter + Vector3.left * GridSize * 0.5f - Vector3.up * GridSize * 0.5f + Vector3.forward * GridSize * 0.5f;
-        Vector3 bottomRightBack     = gridCenter - Vector3.left * GridSize * 0.5f - Vector3.up * GridSize * 0.5f + Vector3.forward * GridSize * 0.5f;
+        Vector3 topLeftFront = gridCenter + Vector3.left * gridSize * 0.5f + Vector3.up * gridSize * 0.5f + Vector3.forward * gridSize * -0.5f;
+        Vector3 topRightFront = gridCenter - Vector3.left * gridSize * 0.5f + Vector3.up * gridSize * 0.5f + Vector3.forward * gridSize * -0.5f;
+        Vector3 bottomLeftFront = gridCenter + Vector3.left * gridSize * 0.5f - Vector3.up * gridSize * 0.5f + Vector3.forward * gridSize * -0.5f;
+        Vector3 bottomRightFront = gridCenter - Vector3.left * gridSize * 0.5f - Vector3.up * gridSize * 0.5f + Vector3.forward * gridSize * -0.5f;
+        Vector3 topLeftBack = gridCenter + Vector3.left * gridSize * 0.5f + Vector3.up * gridSize * 0.5f + Vector3.forward * gridSize * 0.5f;
+        Vector3 topRightBack = gridCenter - Vector3.left * gridSize * 0.5f + Vector3.up * gridSize * 0.5f + Vector3.forward * gridSize * 0.5f;
+        Vector3 bottomLeftBack = gridCenter + Vector3.left * gridSize * 0.5f - Vector3.up * gridSize * 0.5f + Vector3.forward * gridSize * 0.5f;
+        Vector3 bottomRightBack = gridCenter - Vector3.left * gridSize * 0.5f - Vector3.up * gridSize * 0.5f + Vector3.forward * gridSize * 0.5f;
 
         // Rendering
         Handles.color = Color.green;
