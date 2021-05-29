@@ -25,7 +25,7 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
         cardType = descriptor.type;
         direction = descriptor.direction;
         UpdateVisuals();
-        CardThemeSO theme = AssetManager.Instance.GetCardTheme(ThemeManager.Instance.GetCurrentCardTheme());
+        CardThemeSO theme = AssetManager.GetCardTheme(ThemeManager.Instance.GetCurrentCardTheme());
         SetTheme(theme);
     }
 

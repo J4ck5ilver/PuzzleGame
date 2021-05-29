@@ -52,13 +52,14 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     private void Start()
     {
+
         RemoveAllCardSlots();
         InitNewCards();
         UpdateSlotsOffset();
         SortNonSelectedCards();
         UpdateMovingCardSeparator();
 
-        CardPanelThemeSO theme = AssetManager.Instance.GetCardPanelTheme(ThemeManager.Instance.GetCurrentPanelTheme());
+        CardPanelThemeSO theme = AssetManager.GetCardPanelTheme(ThemeManager.Instance.GetCurrentPanelTheme());
         SetTheme(theme);
 
         //UpdateUIFunction() // from themeManager

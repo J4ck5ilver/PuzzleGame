@@ -51,10 +51,10 @@ public class CardManager : MonoBehaviour
 
     public void SetTheme(CardTheme theme)
     {
-        CardThemeSO cardTheme = AssetManager.Instance.GetCardTheme(theme);
+        CardThemeSO cardTheme = AssetManager.GetCardTheme(theme);
+        
 
-
-        foreach(Transform startCard in startCards)
+        foreach (Transform startCard in startCards)
         {
             startCard.GetComponent<Card>().SetTheme(cardTheme);
         }

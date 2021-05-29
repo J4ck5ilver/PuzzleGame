@@ -2,25 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AssetManager : MonoBehaviour
+public static class AssetManager
 {
 
-    public static AssetManager Instance { get; private set; }
 
-    private static Dictionary<CardType, ActionCardSO> actionCardDirectory = null;
-    private static Dictionary<CardTheme, CardThemeSO> cardThemeDirectory = null;
-    private static Dictionary<CardPanelTheme, CardPanelThemeSO> cardPanelThemeDirectory = null;
+    [SerializeField] private static Dictionary<CardType, ActionCardSO> actionCardDirectory = null;
+    [SerializeField] private static Dictionary<CardTheme, CardThemeSO> cardThemeDirectory = null;
+    [SerializeField] private static Dictionary<CardPanelTheme, CardPanelThemeSO> cardPanelThemeDirectory = null;
 
-    private void Awake()
+
+    public static CardThemeSO GetCardTheme(CardTheme theme)
     {
-        Instance = this;
-        LoadActionCardList();
-        LoadPanelThemeList();
-        LoadCardThemeList();
-    }
+        if (actionCardDirectory == null)
+        {
+            LoadCardThemeList();
+        }
 
-    public CardThemeSO GetCardTheme(CardTheme theme)
-    {
         CardThemeSO returnValue;
         if (cardThemeDirectory.TryGetValue(theme, out returnValue))
         {
@@ -29,28 +26,34 @@ public class AssetManager : MonoBehaviour
         return null;
     }
 
-    public CardPanelThemeSO GetCardPanelTheme(CardPanelTheme theme)
+    public static CardPanelThemeSO GetCardPanelTheme(CardPanelTheme theme)
     {
+
+        if (cardPanelThemeDirectory == null)
+        {
+            LoadPanelThemeList();
+        }
         CardPanelThemeSO returnValue;
-        if (cardPanelThemeDirectory.TryGetValue(theme,out returnValue))
+        if (cardPanelThemeDirectory.TryGetValue(theme, out returnValue))
         {
             return returnValue;
         }
         return null;
     }
 
-    public Dictionary<CardType, ActionCardSO> GetActionCardDirectory()
+    public static Dictionary<CardType, ActionCardSO> GetActionCardDirectory()
     {
-        if(actionCardDirectory == null)
+        if (actionCardDirectory == null)
         {
             LoadActionCardList();
         }
         return actionCardDirectory;
     }
 
-    private void LoadPanelThemeList()
+    private static void LoadPanelThemeList()
     {
-        cardPanelThemeDirectory =   new Dictionary<CardPanelTheme, CardPanelThemeSO>();
+
+        cardPanelThemeDirectory = new Dictionary<CardPanelTheme, CardPanelThemeSO>();
         CardPanelThemeListSO cardPanelThemeList = Resources.Load<CardPanelThemeListSO>(typeof(CardPanelThemeListSO).Name);
 
         foreach (CardPanelThemeSO cardPanelTheme in cardPanelThemeList.list)
@@ -58,7 +61,7 @@ public class AssetManager : MonoBehaviour
             cardPanelThemeDirectory[cardPanelTheme.theme] = cardPanelTheme;
         }
     }
-    private void LoadCardThemeList()
+    private static void LoadCardThemeList()
     {
         cardThemeDirectory = new Dictionary<CardTheme, CardThemeSO>();
         CardThemeListSO cardThemeList = Resources.Load<CardThemeListSO>(typeof(CardThemeListSO).Name);
@@ -69,7 +72,7 @@ public class AssetManager : MonoBehaviour
         }
     }
 
-    private void LoadActionCardList()
+    private static void LoadActionCardList()
     {
 
         actionCardDirectory = new Dictionary<CardType, ActionCardSO>();

@@ -28,7 +28,7 @@ public class CardPanelManager : MonoBehaviour
 
     public void SetTheme(CardPanelTheme theme)
     {
-        CardPanelThemeSO cardPanelThem = AssetManager.Instance.GetCardPanelTheme(theme);
+        CardPanelThemeSO cardPanelThem = AssetManager.GetCardPanelTheme(theme);
         startPanel.GetComponent<CardPanel>().SetTheme(cardPanelThem);
     }
 
