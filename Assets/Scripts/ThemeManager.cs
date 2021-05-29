@@ -23,6 +23,7 @@ public class ThemeManager : MonoBehaviour
 
     private void Start()
     {
+        // Let Game Manager set theme
         if(currentPanelTheme == CardPanelTheme.None)
         {
             SetPanelTheme(StartPanelTheme);

@@ -168,16 +168,24 @@ public class MapEditor : EditorWindow
 
         if (paletteIndex < palette.Count && Event.current.type == EventType.MouseDown && Event.current.button == 0)
         {
+            bool spawn = true;
+            if (useGrid || useRayGrid)
+            {
+                if (Physics.CheckBox(spawnPosition, new Vector3((gridSize / 4.0f), (gridSize / 4.0f), (gridSize / 4.0f))))
+                {
+                    spawn = false;
+                }
+            }
 
-            GameObject prefab = palette[paletteIndex];
-            GameObject gameObject = PrefabUtility.InstantiatePrefab(prefab, outputTransform) as GameObject;
+            if(spawn)
+            {
+                GameObject prefab = palette[paletteIndex];
+                GameObject gameObject = PrefabUtility.InstantiatePrefab(prefab, outputTransform) as GameObject;
 
-            gameObject.transform.position = spawnPosition;
+                gameObject.transform.position = spawnPosition;
+                Undo.RegisterCreatedObjectUndo(gameObject, "");
+            }
 
-
-
-
-            Undo.RegisterCreatedObjectUndo(gameObject, "");
         }
     }
 
@@ -228,6 +236,7 @@ public class MapEditor : EditorWindow
         string[] prefabFiles = System.IO.Directory.GetFiles(path, "*.prefab");
         foreach (string prefabFile in prefabFiles)
             palette.Add(AssetDatabase.LoadAssetAtPath(prefabFile, typeof(GameObject)) as GameObject);
+        
     }
 
     void OnDestroy()
