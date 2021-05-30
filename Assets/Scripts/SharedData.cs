@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System;
+using UnityEngine.EventSystems;
 
 public enum CardType
 {
@@ -12,6 +13,12 @@ public enum CardType
 }
 
 
+public enum CardSortOrder
+{
+    CardType,
+    Direction,
+    NumberOfMoves
+}
 
 // add themes? cards sos, + lists
 
@@ -24,17 +31,44 @@ public enum Direction
     None
 }
 
+
+
+public enum CardTheme
+{
+    None,
+    Wood
+}
+public enum CardPanelTheme
+{
+    None,
+    Wood
+}
+
+public enum CardPanelState
+{
+    Play,
+    Select,
+    Reset,
+    NextStep
+}
+
+public class PanelEventArgs : EventArgs
+{
+    public Transform senderTransform = null;
+    public PointerEventData pointerData = null;
+}
+
 public static class GameConstants
 {
-    public const int maxNumberOfMoves = 99;
+    public const int maxNumberOfMoves = 10;
     public const int minNumberOfMoves = 0;
 }
 
 
-public class CardDescriptor
+[Serializable] public class CardDescriptor
 {
 
-    public int numberOfMoves                 { get; set; }
+    public int numberOfMoves        { get; set; }
     public Vector3 directionVector  { get; set; }
     public bool speacialMove        { get; set; }
     public CardType type            { get; set; }
@@ -42,7 +76,7 @@ public class CardDescriptor
 
     public CardDescriptor()
     {
-        numberOfMoves = 0;
+        numberOfMoves = 99;
         directionVector = new Vector3(0,0,0);
         speacialMove = false;
         type = CardType.Walk;
@@ -56,6 +90,7 @@ public class CardDescriptor
         type = other.type;
         direction = other.direction;
     }
+    
 
 }
 

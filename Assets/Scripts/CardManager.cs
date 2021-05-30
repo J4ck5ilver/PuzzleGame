@@ -7,27 +7,76 @@ public class CardManager : MonoBehaviour
 
     public static CardManager Instance { get; private set; }
 
-    private List<Transform> cards = new List<Transform>();
+    private List<Transform> startCards = new List<Transform>();
+
+    private List<Transform> cardsInPlay = new List<Transform>();
+
 
     private void Awake()
     {
-        
         Instance = this;
+        InitStartCards();
+    }
 
-        foreach(Transform childCard in transform)
+    private void InitStartCards()
+    {
+        foreach (Transform childCard in transform)
         {
             Card hasCompnent = childCard.GetComponent<Card>();
-            if(hasCompnent != null)
+            if (hasCompnent != null)
             {
-                cards.Add(childCard);
+                startCards.Add(childCard);
             }
+        }
+    }
+
+    public void RemoveAllStartCards()
+    {
+        List<Transform> childsToDestroy = new List<Transform>();
+
+        foreach (Transform childCard in transform)
+        {
+            Card hasCompnent = childCard.GetComponent<Card>();
+            if (hasCompnent != null)
+            {
+                childsToDestroy.Add(childCard);
+             
+            }
+        }
+        foreach (Transform child in childsToDestroy)
+        {
+            DestroyImmediate(child.gameObject);
+        }
+    }
+
+    public void SetTheme(CardTheme theme)
+    {
+        CardThemeSO cardTheme = AssetManager.GetCardTheme(theme);
+        
+
+        foreach (Transform startCard in startCards)
+        {
+            startCard.GetComponent<Card>().SetTheme(cardTheme);
+        }
+
+        foreach(Transform cardInPlay in cardsInPlay)
+        {
+            cardInPlay.GetComponent<Card>().SetTheme(cardTheme);
         }
 
     }
-
-    public List<Transform> GetCards()
+    public void  AddToCardsInPlay(Transform cardToAdd)
     {
-        return cards;
+        cardsInPlay.Add(cardToAdd);
+    }
+
+    public List<Transform> GetStartCards()
+    {
+        return startCards;
+    }
+    public List<Transform> GetCardsInPlay()
+    {
+        return cardsInPlay;
     }
 
 

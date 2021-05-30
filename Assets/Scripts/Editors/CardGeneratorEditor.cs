@@ -8,25 +8,17 @@ using UnityEditor;
 [CustomEditor(typeof(CardGenerator))]
 public class CardGeneratorEditor : Editor
 {
-
-
-
     static private CardDescriptor cardDescriptor = new CardDescriptor();
 
-    //private int numberOfMoves;
-    //private Vector3 direction;
-    //private bool speacialMove;
-    //private CardType type;
-
-
+    static int numberOfRandomCards;
 
     public override void OnInspectorGUI()
     {
-        
+
         DrawDefaultInspector();
 
-       
-       CardGenerator cardGenerator = (CardGenerator)target;
+
+        CardGenerator cardGenerator = (CardGenerator)target;
 
         cardDescriptor.numberOfMoves = EditorGUILayout.IntField("Number of moves:", cardDescriptor.numberOfMoves);
         cardDescriptor.numberOfMoves = Mathf.Clamp(cardDescriptor.numberOfMoves, GameConstants.minNumberOfMoves, GameConstants.maxNumberOfMoves);
@@ -39,7 +31,32 @@ public class CardGeneratorEditor : Editor
         {
             CardDescriptor newDesc = new CardDescriptor(cardDescriptor);
             cardGenerator.CreateCard(newDesc);
-            
+
+        }
+        if (GUILayout.Button("Remove Cards"))
+        {
+            foreach(Transform child in cardGenerator.transform)
+            {
+                CardManager cardManager = child.gameObject.GetComponent<CardManager>();
+                if(cardManager != null)
+                {
+                    cardManager.RemoveAllStartCards();
+                }
+
+            }
+        }
+            numberOfRandomCards = EditorGUILayout.IntField("Number of moves:", numberOfRandomCards);
+        if (GUILayout.Button("Generate Number of Random Debug Cards"))
+        {
+            for (int i = 0; i < numberOfRandomCards; i++)
+            {
+                CardDescriptor newDesc = new CardDescriptor();
+
+                newDesc.direction = (Direction)Random.Range(0,5);
+                newDesc.numberOfMoves = Random.Range(0,10);
+                newDesc.type = (CardType)Random.Range(0, 3);
+                cardGenerator.CreateCard(newDesc);
+            }
         }
     }
 }

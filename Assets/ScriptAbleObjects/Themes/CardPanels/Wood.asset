@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ce724f722880484cb2b2106f88c6546, type: 3}
   m_Name: Wood
   m_EditorClassIdentifier: 
-  CardSlot: {fileID: 11400000, guid: 6e646cdf6de7b344294af8d16797d78c, type: 2}
-  preFab: {fileID: 8328072442787042934, guid: 8ef638b9fa8303e4d9fbab7d40a2f8e5, type: 3}
   panelBackgroundSprite: {fileID: 21300000, guid: 89decdf84a101d844a345cf24bee4dd9, type: 3}
   panelBorderSprite: {fileID: 0}
-  IsVertical: 1
+  cardSlotTheme: {fileID: 11400000, guid: 6e646cdf6de7b344294af8d16797d78c, type: 2}
+  theme: 1

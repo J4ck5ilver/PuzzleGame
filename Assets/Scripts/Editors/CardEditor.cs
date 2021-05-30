@@ -15,9 +15,10 @@ public class CardEditor : Editor
         CardDescriptor descriptor = card.GetData();
 
  
-        EditorGUILayout.Vector3Field("Vector Direction:", descriptor.directionVector);
         EditorGUILayout.EnumPopup("Type:", descriptor.type);
         EditorGUILayout.EnumPopup("Direction:", descriptor.direction);
+        EditorGUILayout.IntField("Number Of Moves:", descriptor.numberOfMoves);
+        EditorGUILayout.Vector3Field("Vector Direction:", descriptor.directionVector);
         EditorGUILayout.Toggle("Use Special Move", descriptor.speacialMove);
 
     }

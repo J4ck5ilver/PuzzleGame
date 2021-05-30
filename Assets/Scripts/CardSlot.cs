@@ -1,57 +1,77 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-public class CardSlot : MonoBehaviour, IPointerEnterHandler
+
+public class CardSlot : MonoBehaviour, IDragHandler
 {
-     
 
-    private CardSlotSO currentCardSlotSO; // needed?
-    private Image background;
-    public void SetActiveGUI(CardSlotSO cardPanelSO)
-    {
-        currentCardSlotSO = cardPanelSO;
-        UpdateGUI();
-    }
-    private void UpdateGUI()
-    {
-      //  background.sprite = currentCardSlotSO.backgroundSprite;
-    }
+    public event EventHandler<PanelEventArgs> OnCardSlotDrag;
 
-    void OnMouseOver()
+    private bool isSelected = false;
+    public float GetWidth()
     {
-        Debug.Log("Yo1");
+        return transform.GetComponent<LayoutElement>().preferredWidth;
     }
-
-    public void OnPointerEnter(PointerEventData pointerEventData)
+    public Transform GetCard()
     {
-        //Output to console the GameObject's name and the following message
-        Debug.Log("Cursor Entering " + name + " GameObject");
+        Transform returnValue = null;
+        foreach(Transform child in transform)
+        {
+            Card hasComponent = child.GetComponent<Card>();
+            if(hasComponent != null)
+            {
+                returnValue = child;
+                break;
+            }
+        }
+        return returnValue;
     }
 
-    private void OnMouseDrag()
+    public void SetIsSelected(bool selected)
     {
-        Debug.Log("Yo2");
+        isSelected = selected;
+        UpdateVisuals();
     }
 
-    private void Update()
+    public bool IsSelected()
     {
-        //if (EventSystem.current.IsPointerOverGameObject())
-        //{
-        //    Debug.Log("Yo");
-        //}
-        //else if (Input.GetMouseButtonDown(0))
-        //{
-        //    Debug.Log("Yo2");
-
-        //}
+        return isSelected;
     }
 
-    void Awake()
+    private void UpdateVisuals()
     {
-        background = transform.Find("background").GetComponent<Image>();
+        Image backgroundImage = transform.Find("background").GetComponent<Image>();
+        if (isSelected)
+        {
+            backgroundImage.color = Color.green;
+        }
+        else
+        {
+            backgroundImage.color = Color.red;
+        }
     }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        PanelEventArgs pointerData = new PanelEventArgs();
+        pointerData.pointerData = eventData;
+        OnCardSlotDrag?.Invoke(this, pointerData);
+    }
+
+
+    public void SetTheme(CardSlotThemeSO theme)
+    {
+        if (theme != null)
+        {
+            transform.Find("background").GetComponent<Image>().sprite = theme.backgroundSprite;
+            UpdateVisuals();
+        }
+    }
+
+
 
 
 }
