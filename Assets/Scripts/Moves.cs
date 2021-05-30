@@ -79,7 +79,7 @@ public class Moves : MonoBehaviour
         //MoveQueue.Enqueue(4);
         //MoveQueue.Enqueue(4);
 
-
+        
 
 
         ResetQueue = new Queue<int>(MoveQueue);
