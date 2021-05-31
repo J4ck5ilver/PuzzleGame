@@ -11,7 +11,8 @@ public class CardPanel : MonoBehaviour, IDragHandler
 {
 
     [SerializeField] private Transform cardSlotPreFab;
-
+    private const float holdCardDelay = 0.35f;
+    private const float holdCardPanelScrollSpeed = 1.5f;
     private const int paddingOffset = 5;
 
     private GridLayoutGroup cardSlotsGridLayoutGroup;
@@ -119,7 +120,33 @@ public class CardPanel : MonoBehaviour, IDragHandler
         {
             SetState(CardPanelState.Play);
         }
+    }
 
+    private void OnCardHold(object sender, PanelEventArgs e)
+    {
+        Transform canvasTransform = UtilsClass.GetTopmostCanvas(this).transform;
+        Card tmpCard = Instantiate(e.senderTransform, canvasTransform).GetComponent<Card>();
+        tmpCard.transform.position = UtilsClass.GetMouseWorldPosition();
+        tmpCard.gameObject.AddComponent<FollowMouse>();
+
+        FollowMouse followMouse = tmpCard.GetComponent<FollowMouse>();
+        followMouse.OnDestroyed += OnCardHoldDestroyed;
+        followMouse.HoldObjectiveOnRightSideOfScreen += OnCardRightOfScreen;
+        followMouse.HoldObjectiveOnLeftSideOfScreen += OnCardLeftOfScreen;
+        scrollingEnabled = false;
+    }
+
+    private void OnCardLeftOfScreen(object sender, EventArgs e)
+    {
+        MoveScrollViewHorizontaly(holdCardPanelScrollSpeed, true);
+    }
+    private void OnCardRightOfScreen(object sender, EventArgs e)
+    {
+        MoveScrollViewHorizontaly(-holdCardPanelScrollSpeed, true);
+    }
+    private void OnCardHoldDestroyed(object sender, EventArgs e)
+    {
+        scrollingEnabled = true;
     }
 
     private bool HasSelectedCards()
@@ -135,16 +162,11 @@ public class CardPanel : MonoBehaviour, IDragHandler
         }
         return returnvalue;
     }
-
-
-
-
     #endregion
 
-
-    private void MoveScrollViewHorizontaly(float horizontalVal)
+    private void MoveScrollViewHorizontaly(float horizontalVal,bool Override = false)
     {
-        if (scrollingEnabled)
+        if (scrollingEnabled || Override)
         {
             RectTransform cardSlotTransform = selectionCardSlots.GetComponent<RectTransform>();
             Vector3 newPosition = new Vector3(horizontalVal, 0.0f, 0.0f);
@@ -336,13 +358,14 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
             Card cardComponent = newCard.GetComponent<Card>();
             cardComponent.SetData(card.GetComponent<Card>().GetData());
-            cardComponent.GetComponent<Card>().CardDragEvent += OnCardDrag;
-            cardComponent.GetComponent<Card>().CardClickedEvent += OnCardClicked;
+            cardComponent.SetCardHoldDelay(holdCardDelay);
+            cardComponent.CardDragEvent += OnCardDrag;
+            cardComponent.CardHoldCardEvent += OnCardHold;
+            cardComponent.CardClickedEvent += OnCardClicked;
 
             RectTransform rectTransCard = newCard.GetComponent<RectTransform>();
             rectTransCard.position = new Vector3(0, 0, 0);
             rectTransCard.anchoredPosition = new Vector2(0, 0);
-            //Update Card UI from ThemeManager
         }
     }
 

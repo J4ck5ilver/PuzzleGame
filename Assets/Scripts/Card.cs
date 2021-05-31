@@ -6,18 +6,46 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDragHandler, IEndDragHandler
+public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerDownHandler, IPointerUpHandler
 {
 
-    [SerializeField]private int numberOfMoves;
+    [SerializeField] private int numberOfMoves;
     [SerializeField] private CardType cardType;
     [SerializeField] private Direction direction;
 
 
     public event EventHandler<PanelEventArgs> CardDragEvent;
     public event EventHandler<PanelEventArgs> CardClickedEvent;
+    public event EventHandler<PanelEventArgs> CardHoldCardEvent;
 
-    private bool lockCardClick = false;
+    private bool clickLocked = false;
+
+    private float holdCardDelay = 0.35f;
+    private float holdCardTimer = 0.0f;
+
+    private bool holdingCardTimerActive = false;
+
+
+    private void Update()
+    {
+        if (holdingCardTimerActive)
+        {
+            holdCardTimer += Time.deltaTime;
+            if (holdCardTimer >= holdCardDelay)
+            {
+                DeactivateHoldCardTimer();
+                PanelEventArgs tmpArgs = new PanelEventArgs();
+                tmpArgs.senderTransform = this.transform;
+                CardHoldCardEvent?.Invoke(this,tmpArgs);
+            }
+        }
+    }
+
+    private void DeactivateHoldCardTimer()
+    {
+        holdingCardTimerActive = false;
+        holdCardTimer = 0.0f;
+    }
 
     public void SetData(CardDescriptor descriptor)
     {
@@ -29,12 +57,17 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
         SetTheme(theme);
     }
 
-    
+   
+
+    public void SetCardHoldDelay(float delayTime)
+    {
+        holdCardDelay = delayTime;
+    }
 
     private void UpdateVisuals()
     {
 
-        
+
         TextMeshProUGUI numberOfMovesText = transform.Find("numberOfMovesSprite").Find("text").GetComponent<TextMeshProUGUI>();
         numberOfMovesText.text = Mathf.Clamp(numberOfMoves, GameConstants.minNumberOfMoves, GameConstants.maxNumberOfMoves).ToString();
 
@@ -51,8 +84,8 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
         CardDescriptor cardData = new CardDescriptor();
 
         cardData.numberOfMoves = numberOfMoves;
-        cardData.type          = cardType;
-        cardData.direction     = direction;
+        cardData.type = cardType;
+        cardData.direction = direction;
 
         return cardData;
     }
@@ -66,13 +99,12 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
     }
     public void OnPointerClick(PointerEventData pointerEventData)
     {
-        if(!lockCardClick)
+        if (!clickLocked)
         {
             PanelEventArgs data = new PanelEventArgs();
             data.pointerData = pointerEventData;
             data.senderTransform = transform;
             CardClickedEvent?.Invoke(this, data);
-
         }
     }
 
@@ -86,11 +118,29 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
 
     public void OnBeginDrag(PointerEventData pointerEventData)
     {
-        lockCardClick = true;
+        if (holdingCardTimerActive)
+        {
+            DeactivateHoldCardTimer();
+        }
+        clickLocked = true;
     }
 
     public void OnEndDrag(PointerEventData pointerEventData)
     {
-        lockCardClick = false;
+        clickLocked = false;
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (holdingCardTimerActive)
+        {
+            DeactivateHoldCardTimer();
+        }
+
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        holdingCardTimerActive = true;
     }
 }

@@ -10,6 +10,15 @@ public static class UtilsClass
     private static Camera mainCamera;
 
 
+    public static Canvas GetTopmostCanvas(Component component)
+    {
+        Canvas[] parentCanvases = component.GetComponentsInParent<Canvas>();
+        if (parentCanvases != null && parentCanvases.Length > 0)
+        {
+            return parentCanvases[parentCanvases.Length - 1];
+        }
+        return null;
+    }
 
     public static Color GetDirectionColor(Direction direction)
     {
@@ -92,9 +101,17 @@ public static class UtilsClass
     {
         if (mainCamera == null) mainCamera = Camera.main;
 
-        Vector3 mouseWorldPosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldPosition.z = 0f;
-        return mouseWorldPosition;
+        //Vector3 mouseWorldPosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        //mouseWorldPosition.z = 0f;
+        //return mouseWorldPosition;
+
+
+
+        var mousePos = Input.mousePosition;
+        mousePos.z = Mathf.Abs(mainCamera.transform.position.z); // select distance = 10 units from the camera
+       // Debug.Log(mainCamera.ScreenToWorldPoint(mousePos));
+        return mousePos;
+
     }
 
     public static Vector3 GetRandomDir()
