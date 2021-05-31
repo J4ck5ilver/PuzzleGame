@@ -27,7 +27,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
     private Transform nonSelectedCardSlots;
     private Transform movingCardSeparator;
 
-    private Transform buttonTransform;
+    private Transform playButtonTransform;
 
     private CardSortOrder sortOrder;
 
@@ -44,8 +44,8 @@ public class CardPanel : MonoBehaviour, IDragHandler
         currentState = CardPanelState.Select;
         InitCardSlotData();
 
-        buttonTransform = transform.Find("playButton");
-        PlayButton component = buttonTransform.GetComponent<PlayButton>();
+        playButtonTransform = transform.Find("playButton");
+        PlayButton component = playButtonTransform.GetComponent<PlayButton>();
         component.OnClick += OnPlayButtonClicked;
 
 
@@ -127,13 +127,18 @@ public class CardPanel : MonoBehaviour, IDragHandler
         Transform canvasTransform = UtilsClass.GetTopmostCanvas(this).transform;
         Card tmpCard = Instantiate(e.senderTransform, canvasTransform).GetComponent<Card>();
         tmpCard.transform.position = UtilsClass.GetMouseWorldPosition();
-        tmpCard.gameObject.AddComponent<FollowMouse>();
 
-        FollowMouse followMouse = tmpCard.GetComponent<FollowMouse>();
+        BoxCollider2D cardBoxCollider = tmpCard.gameObject.AddComponent<BoxCollider2D>();
+        cardBoxCollider.size = tmpCard.GetComponent<RectTransform>().rect.size;
+
+        FollowMouse followMouse = tmpCard.gameObject.AddComponent<FollowMouse>();
         followMouse.OnDestroyed += OnCardHoldDestroyed;
         followMouse.HoldObjectiveOnRightSideOfScreen += OnCardRightOfScreen;
         followMouse.HoldObjectiveOnLeftSideOfScreen += OnCardLeftOfScreen;
         scrollingEnabled = false;
+
+
+
     }
 
     private void OnCardLeftOfScreen(object sender, EventArgs e)
@@ -185,8 +190,8 @@ public class CardPanel : MonoBehaviour, IDragHandler
     }
     private void EnablePlayButton(bool state)
     {
-        buttonTransform.GetComponent<PlayButton>().enabled = state;
-        buttonTransform.gameObject.SetActive(state);
+        playButtonTransform.GetComponent<PlayButton>().enabled = state;
+        playButtonTransform.gameObject.SetActive(state);
     }
 
 
@@ -398,6 +403,17 @@ public class CardPanel : MonoBehaviour, IDragHandler
         float nonSelectedPanelOffset = ((nrOfSlotsInSelected) * (Mathf.CeilToInt(cardSlotWidth) + paddingOffset)) + (paddingOffset * 2);
         cardSlotsGridLayoutGroup.spacing = new Vector2(nonSelectedPanelOffset, 0.0f);
 
+        BoxCollider2D selectedGroupBoxCollider = selectedCardSlots.GetComponent<BoxCollider2D>();
+
+        Vector2 hitboxSize = new Vector2((paddingOffset + ((cardSlotWidth + paddingOffset) * nrOfSlotsInSelected)), cardSlotPreFab.GetComponent<RectTransform>().rect.height + paddingOffset*2);
+
+        selectedGroupBoxCollider.size = hitboxSize;
+
+        selectedGroupBoxCollider.offset = new Vector2( ((-selectedGroupBoxCollider.size.x/2.0f) + (cardSlotWidth / 2.0f) + paddingOffset), 0.0f);
+
+
+
+
         int viewOffset = nrOfSlotsInNonSelected * Mathf.CeilToInt((cardSlotWidth + paddingOffset)) - paddingOffset * 6; //(left, right + middle seperator removal)
         cardSlotsGridLayoutGroup.padding.left = viewOffset;
 
@@ -579,6 +595,18 @@ public class CardPanel : MonoBehaviour, IDragHandler
                 break;
             }
         }
+        return returnValue;
+    }
+
+    private Transform GetCarsSlotThatContainsCard(Transform cardToFind)
+    {
+        Transform returnValue = GetCarsSlotInSelectedWithCard(cardToFind);
+
+        if(returnValue == null)
+        {
+            returnValue = GetCarsSlotInNonSelectedWithCard(cardToFind);
+        }
+
         return returnValue;
     }
 

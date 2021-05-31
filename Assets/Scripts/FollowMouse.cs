@@ -31,7 +31,7 @@ public class FollowMouse : MonoBehaviour
         // Debug.Log("Local Pos " + transform.localPosition);
         //  mainCanvas.GetComponent<RectTransform>().rect.center
 
-        Debug.Log("%" + (canvasRectTransform.rect.xMin * (1.0f - scrollLeftActivatePercentage)));
+     //   Debug.Log("%" + (canvasRectTransform.rect.xMin * (1.0f - scrollLeftActivatePercentage)));
         if(transform.localPosition.x < (canvasRectTransform.rect.xMin * (1.0f - scrollLeftActivatePercentage)))
         {
             HoldObjectiveOnLeftSideOfScreen?.Invoke(this, EventArgs.Empty);
