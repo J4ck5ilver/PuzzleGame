@@ -56,6 +56,7 @@ public class PanelEventArgs : EventArgs
 {
     public Transform senderTransform = null;
     public PointerEventData pointerData = null;
+    public Vector2 poitionData2D = new Vector2();
 }
 
 public static class GameConstants
