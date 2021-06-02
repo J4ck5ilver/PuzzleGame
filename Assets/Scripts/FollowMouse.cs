@@ -19,10 +19,7 @@ public class FollowMouse : MonoBehaviour
     {
         canvasRectTransform = UtilsClass.GetTopmostCanvas(this).GetComponent<RectTransform>();
     }
-    private void OnDestroy()
-    {
-        OnDestroyed?.Invoke(this, EventArgs.Empty);
-    }
+
     void Update()
     {
         transform.position = UtilsClass.GetMouseWorldPosition();
@@ -43,6 +40,9 @@ public class FollowMouse : MonoBehaviour
 
         if (Input.GetButtonUp("Fire1"))
         {
+            transform.GetComponent<BoxCollider2D>().enabled = false;
+            OnDestroyed?.Invoke(this, EventArgs.Empty);
+            gameObject.SetActive(false);
             Destroy(this.gameObject);
         }
 
