@@ -46,6 +46,56 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
 
     }
 
+    public void SetAlfa(float alfa)
+    {
+        // Can be optimized
+
+        foreach(Transform child in transform)
+        {
+
+            Image tmpImage;
+            TextMeshProUGUI tmpText;
+            if (child.childCount != 0)
+            {
+                foreach (Transform subChild in child)
+                {
+                    tmpImage = subChild.GetComponent<Image>();
+                    tmpText = subChild.GetComponent<TextMeshProUGUI>();
+                    if (tmpImage != null)
+                    {
+                        Color tmpColor = tmpImage.color;
+                        tmpColor.a = alfa;
+                        tmpImage.color = tmpColor;
+                    }
+                    if (tmpText != null)
+                    {
+                        Color tmpColor = tmpText.color;
+                        tmpColor.a = alfa;
+                        tmpText.color = tmpColor;
+                    }
+                }
+            }
+
+
+
+            tmpImage = child.GetComponent<Image>();
+            tmpText =   child.GetComponent<TextMeshProUGUI>();
+            if (tmpImage != null)
+            {
+                Color tmpColor = tmpImage.color;
+                tmpColor.a = alfa;
+                tmpImage.color = tmpColor;
+            }
+            if(tmpText != null)
+            {
+                Color tmpColor = tmpText.color;
+                tmpColor.a = alfa;
+                tmpText.color = tmpColor;
+            }
+        }
+    }
+
+
     private void SendCardHoldEvent()
     {
         DeactivateHoldCardTimer();
@@ -130,7 +180,7 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
             clickLocked = false;
             SendCardHoldEvent();
         }
-        else
+        else if((Mathf.Abs(pointerEventData.delta.x / 4.0f)) > pointerEventData.delta.y)
         {
             PanelEventArgs data = new PanelEventArgs();
             data.pointerData = pointerEventData;

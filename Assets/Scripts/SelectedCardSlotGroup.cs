@@ -13,8 +13,6 @@ public class SelectedCardSlotGroup : MonoBehaviour
     public event EventHandler<EventArgs> CollisionExitEvent;
     public event EventHandler<PanelEventArgs> CollisionStayEvent;
 
-
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.GetComponent<FollowMouse>() != null)
@@ -75,19 +73,12 @@ public class SelectedCardSlotGroup : MonoBehaviour
             }
         }
 
-
-
-
         if (returnIndex == intLargetsIndex && returnIndex != 0)
         {
             returnIndex++;
         }
-
-
-
-            arg.intData = returnIndex;
-
-
+        
+        arg.intData = returnIndex;
         return arg;
     }
 

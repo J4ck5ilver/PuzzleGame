@@ -43,6 +43,8 @@ public class CardPanel : MonoBehaviour, IDragHandler
     private bool scrollingEnabled = true;
     private bool carSelectionEnabled = true;
 
+    private float deltaFloat = 0.0f;
+
     private void Awake()
     {
         sortOrder = CardSortOrder.CardType;
@@ -69,6 +71,26 @@ public class CardPanel : MonoBehaviour, IDragHandler
         SetTheme(theme);
 
         //UpdateUIFunction() // from themeManager
+    }
+
+    private void Update()
+    {
+        UpdateHoldingCardVisuals();
+    }
+
+    private void UpdateHoldingCardVisuals()
+    {
+        if (holdingCardCardSlot != null)
+        {
+            Card tmpCard = holdingCardCardSlot.GetComponent<CardSlot>().GetCard().GetComponent<Card>();
+            if (tmpCard != null)
+            {
+                deltaFloat += Time.deltaTime * 1.8f;
+                float alfaVal = Mathf.Lerp(0.3f, 0.6f, Mathf.Abs(Mathf.Sin(deltaFloat)));
+               tmpCard.SetAlfa(alfaVal);
+            }
+
+        }
     }
 
     public void SetTheme(CardPanelThemeSO theme)
@@ -110,6 +132,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
         CardSlot cardSlot = holdingCardCardSlot.GetComponent<CardSlot>();
         cardSlot.GetCard().gameObject.SetActive(true);
+        cardSlot.GetCard().GetComponent<Card>().SetAlfa(1.0f);
 
         if (holdingCardCardSlot.gameObject.activeInHierarchy)
         {
@@ -140,7 +163,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     private void OnCardHold(object sender, PanelEventArgs e)
     {
-        if (currentState != CardPanelState.Play)
+        if (currentState != CardPanelState.Play && holdingCardCardSlot == null)
         {
             Transform canvasTransform = UtilsClass.GetTopmostCanvas(this).transform;
             Card tmpCard = Instantiate(e.senderTransform, canvasTransform).GetComponent<Card>();
@@ -150,7 +173,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
             holdingCardCardSlot = GetCarsSlotThatContainsCard(e.senderTransform);
             CardSlot cardSlot = holdingCardCardSlot.GetComponent<CardSlot>();
 
-            cardSlot.GetCard().gameObject.SetActive(false);
+            cardSlot.GetCard().gameObject.SetActive(true);
 
 
             if (!cardSlot.IsSelected())
@@ -682,7 +705,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
         return returnValue;
     }
 
-    private Transform GetCarsSlotInSelectedWithCard(Transform cardToFind)
+    private Transform GetCardSlotInSelectedWithCard(Transform cardToFind)
     {
         Transform returnValue = null;
 
@@ -699,7 +722,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     private Transform GetCarsSlotThatContainsCard(Transform cardToFind)
     {
-        Transform returnValue = GetCarsSlotInSelectedWithCard(cardToFind);
+        Transform returnValue = GetCardSlotInSelectedWithCard(cardToFind);
 
         if (returnValue == null)
         {
@@ -736,43 +759,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
         return returnValue;
     }
 
-    #region DebugFunctions
-
-    public void MoveFirstChildFromSelectedToNonSelcted()
-    {
-
-        InitCardSlotData();
-
-        foreach (Transform cardSlot in selectedCardSlots)
-        {
-            if (cardSlot.GetComponent<CardSlot>() != null)
-            {
-                cardSlot.SetParent(nonSelectedCardSlots.transform);
-                break;
-            }
-
-            break;
-        }
-        UpdateSlotsOffset();
-        SortNonSelectedCards();
-    }
-
-    public void MoveFirstChildFromNonSelctedToSelected()
-    {
-        InitCardSlotData();
-        foreach (Transform cardSlot in nonSelectedCardSlots)
-        {
-            if (cardSlot.GetComponent<CardSlot>() != null)
-            {
-                cardSlot.SetParent(selectedCardSlots.transform);
-                break;
-            }
-        }
-        UpdateSlotsOffset();
-        SortNonSelectedCards();
-    }
-
-    #endregion
     #endregion
 
 
