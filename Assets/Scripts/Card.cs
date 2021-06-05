@@ -18,14 +18,21 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
     public event EventHandler<PanelEventArgs> CardClickedEvent;
     public event EventHandler<PanelEventArgs> CardHoldCardEvent;
 
+    private Vector3 beginDragPosition = new Vector3();
+
     private bool clickLocked = false;
+
+    private float beginSnapOffset;
 
     private float holdCardDelay = 0.35f;
     private float holdCardTimer = 0.0f;
 
     private bool holdingCardTimerActive = false;
 
-
+    private void Awake()
+    {
+        beginSnapOffset = transform.GetComponent<RectTransform>().rect.height;
+    }
     private void Update()
     {
         if (holdingCardTimerActive)
@@ -33,12 +40,18 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
             holdCardTimer += Time.deltaTime;
             if (holdCardTimer >= holdCardDelay)
             {
-                DeactivateHoldCardTimer();
-                PanelEventArgs tmpArgs = new PanelEventArgs();
-                tmpArgs.senderTransform = this.transform;
-                CardHoldCardEvent?.Invoke(this,tmpArgs);
+                SendCardHoldEvent();
             }
         }
+
+    }
+
+    private void SendCardHoldEvent()
+    {
+        DeactivateHoldCardTimer();
+        PanelEventArgs tmpArgs = new PanelEventArgs();
+        tmpArgs.senderTransform = this.transform;
+        CardHoldCardEvent?.Invoke(this, tmpArgs);
     }
 
     private void DeactivateHoldCardTimer()
@@ -57,7 +70,7 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
         SetTheme(theme);
     }
 
-   
+
 
     public void SetCardHoldDelay(float delayTime)
     {
@@ -111,9 +124,18 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
 
     public void OnDrag(PointerEventData pointerEventData)
     {
-        PanelEventArgs data = new PanelEventArgs();
-        data.pointerData = pointerEventData;
-        CardDragEvent?.Invoke(this, data);
+
+        if (beginSnapOffset < (pointerEventData.position.y - transform.position.y))
+        {
+            clickLocked = false;
+            SendCardHoldEvent();
+        }
+        else
+        {
+            PanelEventArgs data = new PanelEventArgs();
+            data.pointerData = pointerEventData;
+            CardDragEvent?.Invoke(this, data);
+        }
     }
 
     public void OnBeginDrag(PointerEventData pointerEventData)
@@ -122,12 +144,16 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
         {
             DeactivateHoldCardTimer();
         }
+        beginDragPosition = pointerEventData.position;
+
         clickLocked = true;
     }
 
     public void OnEndDrag(PointerEventData pointerEventData)
     {
+        beginDragPosition = new Vector3();
         clickLocked = false;
+
     }
 
     public void OnPointerUp(PointerEventData eventData)

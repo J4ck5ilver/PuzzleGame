@@ -160,19 +160,11 @@ public class CardPanel : MonoBehaviour, IDragHandler
                 UpdateSlotsOffset();
             }
 
-            //cardSlot.SetIsSelected(false);
-            //cardSlot.transform.SetParent(nonSelectedCardSlots.transform);
-
-
-
-
             FollowMouse followMouse = tmpCard.gameObject.AddComponent<FollowMouse>();
             followMouse.OnDestroyed += OnCardHoldDestroyed;
             followMouse.HoldObjectiveOnRightSideOfScreen += OnCardRightOfScreen;
             followMouse.HoldObjectiveOnLeftSideOfScreen += OnCardLeftOfScreen;
             scrollingEnabled = false;
-
-            //UpdateMovingCardSeparator();
         }
     }
 
@@ -215,7 +207,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     private void OnHoldCardCollidingWithSelectedCardGroup(object sender, PanelEventArgs arg)
     {
-
         int index = arg.intData;
 
         if (lastHoldCardSelectionGroupIndex != index)
