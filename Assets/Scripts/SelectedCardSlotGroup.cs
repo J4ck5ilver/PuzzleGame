@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.EventSystems;
 
-public class SelectedCardSlot : MonoBehaviour
+public class SelectedCardSlotGroup : MonoBehaviour
 {
 
 
@@ -28,7 +29,6 @@ public class SelectedCardSlot : MonoBehaviour
         {
             if(collision.gameObject.GetComponent<BoxCollider2D>().enabled)
             {
-
                 CollisionExitEvent?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -46,10 +46,49 @@ public class SelectedCardSlot : MonoBehaviour
     private PanelEventArgs GetPanelPositionArgs(Collider2D collision)
     {
         PanelEventArgs arg = new PanelEventArgs();
-        Vector3 offset = new Vector3(collision.GetComponent<RectTransform>().rect.width / 2.0f, 0.0f, 0.0f);
-        arg.poitionData2D = (transform.position - collision.transform.position + offset);
+
+        int returnIndex = 0;
+        float closestCardSlot = 10000.0f;
+        int intLargetsIndex = 0;
+
+        foreach (Transform cardSlot in transform)
+        {
+            CardSlot cardSlotComponent = cardSlot.GetComponent<CardSlot>();
+            if (cardSlot.gameObject.activeInHierarchy && cardSlotComponent != null)
+            {
+
+
+                int currentSiblingIndex = cardSlot.GetSiblingIndex();
+
+                if (intLargetsIndex <= currentSiblingIndex)
+                {
+                    intLargetsIndex = currentSiblingIndex;
+                }
+
+                float distance = Mathf.Abs(cardSlot.position.x - collision.transform.position.x);
+                if(distance < closestCardSlot)
+                {
+                    returnIndex = currentSiblingIndex;
+                    closestCardSlot = distance;
+                }
+
+            }
+        }
+
+
+
+
+        if (returnIndex == intLargetsIndex && returnIndex != 0)
+        {
+            returnIndex++;
+        }
+
+
+
+            arg.intData = returnIndex;
+
+
         return arg;
     }
-
 
 }

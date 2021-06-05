@@ -6,39 +6,58 @@ using System;
 
 public class FollowMouse : MonoBehaviour
 {
-    public event EventHandler<EventArgs> HoldObjectiveOnLeftSideOfScreen;
-    public event EventHandler<EventArgs> HoldObjectiveOnRightSideOfScreen;
+    public event EventHandler<PanelEventArgs> HoldObjectiveOnLeftSideOfScreen;
+    public event EventHandler<PanelEventArgs> HoldObjectiveOnRightSideOfScreen;
 
     public event EventHandler<EventArgs> OnDestroyed;
     private RectTransform canvasRectTransform;
 
-    private const float scrollRightActivatePercentage = 0.5f;
-    private const float scrollLeftActivatePercentage = 0.4f;
+    //From the center of the screen
+    private const float scrollRightActivatePercentage = 0.55f;
+    private const float scrollLeftActivatePercentage = 0.45f;
 
     private float yHoldOffset = 0.0f;
 
     private void Awake()
     {
         canvasRectTransform = UtilsClass.GetTopmostCanvas(this).GetComponent<RectTransform>();
-        yHoldOffset = transform.GetComponent<RectTransform>().rect.height / -2.0f;
+        yHoldOffset = transform.GetComponent<RectTransform>().rect.height * 1.5f;
+
+
+        BoxCollider2D collider = gameObject.AddComponent<BoxCollider2D>();
+        collider.size = new Vector2(gameObject.GetComponent<RectTransform>().rect.size.x * 3.4f, gameObject.GetComponent<RectTransform>().rect.size.y * 100.5f);
     }
 
     void Update()
     {
         transform.position = UtilsClass.GetMouseWorldPosition();
         transform.position = new Vector3(transform.position.x, transform.position.y + yHoldOffset, 0.0f);
-        // Debug.Log(UtilsClass.GetMouseWorldPosition());
-        // Debug.Log("Local Pos " + transform.localPosition);
-        //  mainCanvas.GetComponent<RectTransform>().rect.center
 
-     //   Debug.Log("%" + (canvasRectTransform.rect.xMin * (1.0f - scrollLeftActivatePercentage)));
         if(transform.localPosition.x < (canvasRectTransform.rect.xMin * (1.0f - scrollLeftActivatePercentage)))
         {
-            HoldObjectiveOnLeftSideOfScreen?.Invoke(this, EventArgs.Empty);
+
+            float subOffset = (canvasRectTransform.rect.xMin * (1.0f - scrollLeftActivatePercentage));
+            float posRange = Math.Abs(canvasRectTransform.rect.xMin - subOffset);
+            float posCalc = Mathf.Abs(transform.localPosition.x - subOffset);
+            float interpolateVal = Mathf.Clamp(posCalc / posRange,0.0f,1.0f);
+    
+            PanelEventArgs arg = new PanelEventArgs();
+            arg.floatData = interpolateVal;
+
+            HoldObjectiveOnLeftSideOfScreen?.Invoke(this, arg);
         }
         else if (transform.localPosition.x > (canvasRectTransform.rect.xMax * (1.0f - scrollRightActivatePercentage)))
         {
-            HoldObjectiveOnRightSideOfScreen?.Invoke(this,EventArgs.Empty);
+
+            float subOffset = (canvasRectTransform.rect.xMax * (1.0f - scrollRightActivatePercentage));
+            float posRange = Math.Abs(canvasRectTransform.rect.xMax - subOffset);
+            float posCalc = Mathf.Abs(transform.localPosition.x - subOffset);
+            float interpolateVal = Mathf.Clamp(posCalc / posRange, 0.0f, 1.0f);
+
+            PanelEventArgs arg = new PanelEventArgs();
+            arg.floatData = interpolateVal;
+
+            HoldObjectiveOnRightSideOfScreen?.Invoke(this, arg);
         }
 
         if (Input.GetButtonUp("Fire1"))
@@ -48,9 +67,5 @@ public class FollowMouse : MonoBehaviour
             gameObject.SetActive(false);
             Destroy(this.gameObject);
         }
-
-
-        
-
     }
 }

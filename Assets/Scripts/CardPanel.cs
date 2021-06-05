@@ -11,11 +11,12 @@ public class CardPanel : MonoBehaviour, IDragHandler
 {
 
     [SerializeField] private Transform cardSlotPreFab;
-    private const float holdCardDelay = 0.35f;
-    private const float holdCardPanelScrollSpeed = 1.5f;
+    private const float holdCardDelay = 0.25f;
+    private const float holdCardPanelScrollSpeed = 6.0f;
     private const int paddingOffset = 5;
     private const float separatorXOffset = paddingOffset * 1.5f;
     private const int panelSidesOffset = paddingOffset * 2;
+
 
     private int lastHoldCardSelectionGroupIndex = -1;
 
@@ -164,8 +165,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
 
 
-            BoxCollider2D cardBoxCollider = tmpCard.gameObject.AddComponent<BoxCollider2D>();
-            cardBoxCollider.size = tmpCard.GetComponent<RectTransform>().rect.size;
 
             FollowMouse followMouse = tmpCard.gameObject.AddComponent<FollowMouse>();
             followMouse.OnDestroyed += OnCardHoldDestroyed;
@@ -187,14 +186,10 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
             cardSlot.SetIsSelected(true);
             cardSlot.transform.SetParent(selectedCardSlots.transform);
-            holdingCardCardSlot.gameObject.SetActive(true);
 
-
-            float holdingCardXCollision = arg.poitionData2D.x + panelSidesOffset;
-            lastHoldCardSelectionGroupIndex = GetHoverCardHeiarchyIDInSelectedGroup(holdingCardXCollision);
-
+            lastHoldCardSelectionGroupIndex = arg.intData;
             holdingCardCardSlot.SetSiblingIndex(lastHoldCardSelectionGroupIndex);
-         
+            holdingCardCardSlot.gameObject.SetActive(true);
 
             UpdateMovingCardSeparator();
             UpdateSlotsOffset();
@@ -221,37 +216,14 @@ public class CardPanel : MonoBehaviour, IDragHandler
     private void OnHoldCardCollidingWithSelectedCardGroup(object sender, PanelEventArgs arg)
     {
 
-        float holdingCardXCollision = arg.poitionData2D.x + panelSidesOffset;
-        //Can be optimized (save hitbox size ?)
-        int index = GetHoverCardHeiarchyIDInSelectedGroup(holdingCardXCollision);
+        int index = arg.intData;
 
         if (lastHoldCardSelectionGroupIndex != index)
         {
-
             holdingCardCardSlot.SetSiblingIndex(index);
             UpdateMovingCardSeparator();
             lastHoldCardSelectionGroupIndex = index;
         }
-
-
-    }
-
-    private int GetHoverCardHeiarchyIDInSelectedGroup(float xOffset)
-    {
-
-
-        BoxCollider2D selectedGroupBoxCollider = selectedCardSlots.GetComponent<BoxCollider2D>();
-        float hitboxXCoordArea = selectedGroupBoxCollider.size.x + selectedGroupBoxCollider.offset.x;
-        xOffset = Mathf.Clamp(xOffset, 0.0f, hitboxXCoordArea);
-
-
-        int divNr = GetNumberOfActiveCardSlotsInSelected();
-        float CardXCorrdinatesOffset = hitboxXCoordArea / divNr;
-        int index = (int)(xOffset / CardXCorrdinatesOffset);
-
-        index = Mathf.Clamp(index, 0, divNr);
-
-        return index;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -276,17 +248,16 @@ public class CardPanel : MonoBehaviour, IDragHandler
         }
     }
 
-
-
-    private void OnCardLeftOfScreen(object sender, EventArgs e)
+    private void OnCardLeftOfScreen(object sender, PanelEventArgs arg)
     {
-        MoveScrollViewHorizontaly(holdCardPanelScrollSpeed, true);
+        float interpolatedScrollSpeed = Mathf.Lerp(0.0f, holdCardPanelScrollSpeed, arg.floatData);
+        MoveScrollViewHorizontaly(interpolatedScrollSpeed, true);
     }
-    private void OnCardRightOfScreen(object sender, EventArgs e)
+    private void OnCardRightOfScreen(object sender, PanelEventArgs arg)
     {
-        MoveScrollViewHorizontaly(-holdCardPanelScrollSpeed, true);
+        float interpolatedScrollSpeed = Mathf.Lerp(0.0f, holdCardPanelScrollSpeed, arg.floatData);
+        MoveScrollViewHorizontaly(-interpolatedScrollSpeed, true);
     }
-
 
     private bool HasSelectedCards()
     {
@@ -328,8 +299,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
         playButtonTransform.gameObject.SetActive(state);
     }
 
-
-
     #region CardSlotLogic
     private void InitCardSlotData()
     {
@@ -343,7 +312,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
         selectedCardSlots = selectionCardSlots.Find("selected");
         nonSelectedCardSlots = selectionCardSlots.Find("nonSelected");
 
-        SelectedCardSlot selectedCardSlotsComponent = selectedCardSlots.GetComponent<SelectedCardSlot>();
+        SelectedCardSlotGroup selectedCardSlotsComponent = selectedCardSlots.GetComponent<SelectedCardSlotGroup>();
 
         selectedCardSlotsComponent.CollisionStayEvent += OnHoldCardCollidingWithSelectedCardGroup;
         selectedCardSlotsComponent.CollisionEnterEvent += OnHoldCardEnterSelectionGroup;
@@ -361,7 +330,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
         selectedCardSlots.GetComponent<GridLayoutGroup>().spacing = new Vector2(cardSlotWidth + paddingOffset, 0.0f);
         nonSelectedCardSlots.GetComponent<GridLayoutGroup>().spacing = new Vector2(cardSlotWidth + paddingOffset, 0.0f);
     }
-
 
     public void NextCard()
     {
@@ -400,7 +368,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
         UpdateSlotsOffset();
         UpdateMovingCardSeparator();
     }
-
 
     public void SetState(CardPanelState state)
     {
