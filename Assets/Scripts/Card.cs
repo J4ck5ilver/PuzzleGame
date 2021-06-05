@@ -31,7 +31,7 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
 
     private void Awake()
     {
-        beginSnapOffset = transform.GetComponent<RectTransform>().rect.height;
+        beginSnapOffset = transform.GetComponent<RectTransform>().rect.height * 1.5f;
     }
     private void Update()
     {
