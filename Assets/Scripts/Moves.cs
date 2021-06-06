@@ -20,112 +20,83 @@ public class Moves : MonoBehaviour
     [SerializeField] float checkRadiusGround;
     [SerializeField] LayerMask whatIsGround;
 
-    List<System.Action> MoveAtlats = new List<System.Action>();
-    Queue<int> MoveQueue = new Queue<int>();
-    Queue<int> ResetQueue = new Queue<int>();
+    Dictionary<CardType, System.Action> actionAtlas = new Dictionary<CardType, System.Action>();
 
     Vector3 StepStartPos;
     Vector3 goalPos;
 
-
-
     Rigidbody rigidbody;
+
+    [SerializeField] Card activeCard;
+    Vector3 steps;
+
+    public delegate void ActionComplete();
+    public static event ActionComplete OnActionComplete;
+
+    public delegate void ReachedGoal();
+    public static event ReachedGoal OnReachedGoal;
+
+    private void OnNewTurn()
+    {
+        Debug.Log("Player: New Turn");
+        activeCard = GameManager.Instance.GetActivePlayerCard();
+        playMoves = true;
+    }
 
 
     // Start is called before the first frame update
     void Start()
     {
+        GameManager.OnNewTurn += OnNewTurn;
+
         rigidbody = transform.GetComponent<Rigidbody>();
 
         startPos = transform.position;
 
-
-        MoveAtlats.Add(() => Walk(new Vector3(4, 0, 0)));
-        MoveAtlats.Add(() => Walk(new Vector3(0, 0, -1)));
-        MoveAtlats.Add(() => Walk(new Vector3(2, 0, 0)));
-        MoveAtlats.Add(() => Walk(new Vector3(0, 0, 1)));
-
-        MoveAtlats.Add(() => Jump(new Vector3(2, 0, 0)));
-        MoveAtlats.Add(() => Jump(new Vector3(-2, 0, 0)));
-        MoveAtlats.Add(() => Jump(new Vector3(0, 0, 2)));
-        MoveAtlats.Add(() => Jump(new Vector3(0, 0, -2)));
-
-        //MoveQueue.Enqueue(0);
-        //MoveQueue.Enqueue(1);
-        //MoveQueue.Enqueue(2);
-        //MoveQueue.Enqueue(3);
-        //MoveQueue.Enqueue(2);
-        //MoveQueue.Enqueue(4);
-        //MoveQueue.Enqueue(1);
-        //MoveQueue.Enqueue(1);
-        //MoveQueue.Enqueue(7);
-
-
-        //Jump direction test
-        MoveQueue.Enqueue(7);
-        MoveQueue.Enqueue(7);
-        MoveQueue.Enqueue(4);
-        MoveQueue.Enqueue(4);
-        MoveQueue.Enqueue(6);
-        MoveQueue.Enqueue(6);
-        MoveQueue.Enqueue(5);
-        MoveQueue.Enqueue(7);
-        MoveQueue.Enqueue(5);
-        MoveQueue.Enqueue(6);
-        MoveQueue.Enqueue(4);
-
-        //MoveQueue.Enqueue(4);
-        //MoveQueue.Enqueue(4);
-        //MoveQueue.Enqueue(4);
-        //MoveQueue.Enqueue(4);
-
-        
-
-
-        ResetQueue = new Queue<int>(MoveQueue);
-
-
+        actionAtlas.Add(CardType.Walk, Walk);
+        actionAtlas.Add(CardType.Jump, Jump);
 
     }
 
+    
     // Update is called once per frame
     void Update()
     {
-        if (playMoves)
+
+        if (playMoves && activeCard != null)
         {
-            if (MoveQueue.Count > 0)
+            if (moveCompleted == false)
             {
-                if (moveCompleted == false)
-                {
-                    MoveAtlats[MoveQueue.Peek()]();
-                }
-                else
-                {
-                    currentStep = 0;
-
-                    if (MoveToClosetsCenter())
-                    {
-                        moveCompleted = false;
-                        currentStep = 0;
-                        Debug.Log("Next!");
-                        MoveQueue.Dequeue();
-
-                    }
-                }
-
+                steps = UtilsClass.DirectionToDirectionVector(activeCard.GetData().direction)* activeCard.GetData().numberOfMoves;
+                actionAtlas[activeCard.GetData().type]();
             }
             else
             {
-                if (loop)
+                currentStep = 0;
+
+                if (MoveToClosetsCenter())
                 {
-                    ResetMovement();
+                    moveCompleted = false;
+                    currentStep = 0;
+                    Debug.Log("Player: Im done");
+                    //activeCard = null;
+                    playMoves = false;
+                    OnActionComplete();
                 }
             }
-        }
 
+
+        }
     }
 
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.layer == LayerMask.NameToLayer("Goal"))
+        {
+            OnReachedGoal();
+        }
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -145,7 +116,6 @@ public class Moves : MonoBehaviour
     void ResetMovement()
     {
         transform.position = startPos;
-        MoveQueue = new Queue<int>(ResetQueue);
         currentStep = 0;
         rigidbody.velocity = Vector3.zero;
         closestCenter = Vector3.zero;
@@ -155,7 +125,7 @@ public class Moves : MonoBehaviour
     {
         if (currentStep == 0)
         {
-            Debug.Log("My pos: " + transform.position);
+           // Debug.Log("Player: My pos: " + transform.position);
             closestCenter.x = Mathf.RoundToInt(transform.position.x);
             closestCenter.y = Mathf.RoundToInt(transform.position.y);
             closestCenter.z = Mathf.RoundToInt(transform.position.z);
@@ -166,9 +136,7 @@ public class Moves : MonoBehaviour
     }
 
     #region Walk
-
-
-    void Walk(Vector3 steps)
+    void Walk()
     {
         if (currentStep == 0)
         {
@@ -195,7 +163,7 @@ public class Moves : MonoBehaviour
 
     bool WalkForwardsPos(Vector3 destination, float speed)
     {
-        Debug.Log("Walk forwad: " + destination);
+       // Debug.Log("Player: Walk forwad: " + destination);
         Vector3 betweenVector = new Vector3(destination.x - transform.position.x, 0.0f, destination.z - transform.position.z);
         float distance = betweenVector.magnitude;
         if (distance > 0.05)
@@ -220,9 +188,8 @@ public class Moves : MonoBehaviour
     #endregion
 
     #region Jump
-    void Jump(Vector3 steps)
+    void Jump()
     {
-
         if (currentStep == 0)
         {
             StepStartPos = new Vector3(transform.position.x, transform.position.y, transform.position.z);

@@ -11,7 +11,7 @@ public class CardManager : MonoBehaviour
 
     private List<Transform> cardsInPlay = new List<Transform>();
 
-
+    private Transform currentCardInPlay;
     private void Awake()
     {
         Instance = this;
@@ -70,6 +70,11 @@ public class CardManager : MonoBehaviour
         cardsInPlay.Add(cardToAdd);
     }
 
+    public void SetCurrentCardInPlay(Transform cardToAdd)
+    {
+        currentCardInPlay = cardToAdd;
+    }
+
     public List<Transform> GetStartCards()
     {
         return startCards;
@@ -79,6 +84,16 @@ public class CardManager : MonoBehaviour
         return cardsInPlay;
     }
 
+    public Card GetCurrentCardInPlay()
+    {
+        Card returnCard = null;
+        if(currentCardInPlay != null)
+        {
+            returnCard = currentCardInPlay.GetComponent<Card>();
+        }
+
+        return returnCard;
+    }
 
 
 

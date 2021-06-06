@@ -46,7 +46,7 @@ public static class UtilsClass
                 returnValue = 0;
                 break;
             case Direction.West:
-                returnValue = 90;
+                returnValue = 90;//Should be east?
                 break;
             case Direction.South:
                 returnValue = 180;
@@ -75,7 +75,7 @@ public static class UtilsClass
                 returnValue = Direction.North;
                 break;
             case 90:
-                returnValue = Direction.West;
+                returnValue = Direction.West; //Should be east?
                 break;
             case 180:
                 returnValue = Direction.South;
@@ -87,6 +87,30 @@ public static class UtilsClass
         return returnValue;
     }
 
+    public static Vector3 DirectionToDirectionVector(Direction direction)
+    {
+        Vector3 returnValue = new Vector3(0.0f, 0.0f, 0.0f);
+        switch (direction)
+        {
+            case Direction.North:
+                returnValue = new Vector3(0.0f, 0.0f, 1.0f);
+                break;
+            case Direction.West:
+                returnValue = new Vector3(-1.0f, 0.0f, 0.0f);
+                break;
+            case Direction.South:
+                returnValue = new Vector3(0.0f, 0.0f, -1.0f);
+                break;
+            case Direction.East:
+                returnValue = new Vector3(1.0f, 0.0f, 0.0f);
+                break;
+            case Direction.None:
+                returnValue = new Vector3(0.0f, 0.0f, 0.0f); 
+                break;
+
+        }
+        return returnValue;
+    }
 
     public static Vector3 GetMouseWorldPosition()
     {

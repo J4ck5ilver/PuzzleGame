@@ -10,6 +10,11 @@ using UnityEngine.EventSystems;
 public class CardPanel : MonoBehaviour, IDragHandler
 {
 
+    public delegate void Play();
+    public static event Play OnPlay;
+
+
+
     [SerializeField] private Transform cardSlotPreFab;
 
     private const int paddingOffset = 5;
@@ -34,7 +39,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     private bool scrollingEnabled = true;
     private bool carSelectionEnabled = true;
-
 
 
     private void Awake()
@@ -63,7 +67,10 @@ public class CardPanel : MonoBehaviour, IDragHandler
         SetTheme(theme);
 
         //UpdateUIFunction() // from themeManager
+
+        GameManager.OnTurnCompleted += NextCard;
     }
+
 
     public void SetTheme(CardPanelThemeSO theme)
     {
@@ -226,12 +233,14 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
         if(noMoreCards && currentCardInPlay != null)
         {
-            DestroyImmediate(currentCardInPlay.gameObject);
+            Destroy(currentCardInPlay.gameObject);
             currentCardInPlay = null;
         }
 
         UpdateSlotsOffset();
         UpdateMovingCardSeparator();
+        CardManager.Instance.SetCurrentCardInPlay(currentCardInPlay);
+
     }
 
 
@@ -255,6 +264,12 @@ public class CardPanel : MonoBehaviour, IDragHandler
                 rectTransform.position = new Vector3(0.0f, oldPosition.y, oldPosition.z);
                 rectTransform.anchoredPosition = new Vector2(0.0f, 0.0f);
                 rectTransform.anchoredPosition3D  = new Vector3(0.0f, 0.0f, 0.0f);
+
+                if(OnPlay != null)
+                {
+                    OnPlay();
+                }
+
                 break;
 
             case CardPanelState.Reset:
@@ -562,7 +577,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
     private Transform SetThemeForCardSlots(CardSlotThemeSO theme)
     {
         Transform returnValue = null;
-
         foreach (Transform cardSlot in nonSelectedCardSlots)
         {
             CardSlot hasComponent = cardSlot.GetComponent<CardSlot>();
@@ -585,7 +599,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
         return returnValue;
     }
-
     #region DebugFunctions
 
     public void MoveFirstChildFromSelectedToNonSelcted()
