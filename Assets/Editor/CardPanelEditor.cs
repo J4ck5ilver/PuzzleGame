@@ -18,20 +18,6 @@ public class CardPanelEditor : Editor
 
         CardPanel cardPanel = (CardPanel)target;
 
-
-        if (GUILayout.Button("Move First Child From Selected to non selected"))
-        {
-
-            cardPanel.MoveFirstChildFromSelectedToNonSelcted();
-            
-        }
-
-        if (GUILayout.Button("Move First Child From non selected to Selected"))
-        {
-            cardPanel.MoveFirstChildFromNonSelctedToSelected();
-        }
-
-
         if (GUILayout.Button("Reset State"))
         {
             cardPanel.SetState(CardPanelState.Reset);

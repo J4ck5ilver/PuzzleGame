@@ -12,7 +12,6 @@ public enum CardType
     Idle
 }
 
-
 public enum CardSortOrder
 {
     CardType,
@@ -21,7 +20,6 @@ public enum CardSortOrder
 }
 
 // add themes? cards sos, + lists
-
 public enum Direction
 {
     North,
@@ -30,8 +28,6 @@ public enum Direction
     West,
     None
 }
-
-
 
 public enum CardTheme
 {
@@ -56,6 +52,9 @@ public class PanelEventArgs : EventArgs
 {
     public Transform senderTransform = null;
     public PointerEventData pointerData = null;
+    public Vector2 poitionData2D = new Vector2();
+    public float floatData;
+    public int intData;
 }
 
 public static class GameConstants
@@ -63,7 +62,6 @@ public static class GameConstants
     public const int maxNumberOfMoves = 10;
     public const int minNumberOfMoves = 0;
 }
-
 
 [Serializable] public class CardDescriptor
 {
@@ -90,8 +88,6 @@ public static class GameConstants
         type = other.type;
         direction = other.direction;
     }
-    
-
 }
 
 
