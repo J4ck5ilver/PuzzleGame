@@ -113,7 +113,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     public void OnCardClicked(object sender, PanelEventArgs args)
     {
-        if (carSelectionEnabled)
+        if (carSelectionEnabled && holdingCardCardSlot == null)
         {
 
             CardSlot cardSlot = args.senderTransform.parent.GetComponent<CardSlot>();
