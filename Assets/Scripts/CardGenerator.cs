@@ -29,7 +29,6 @@ public class CardGenerator : MonoBehaviour
         newCard.transform.position = new Vector3(xOffSet, startOffset.y, 0);
         SetNonThemeSprites(newCard, descriptor);
         newCard.GetComponent<Card>().SetData(descriptor);
-
     }
 
     private int GetNumbersOfCarsInCardManager()
@@ -86,9 +85,6 @@ public class CardGenerator : MonoBehaviour
 
     private string GetName(CardDescriptor descriptor)
     {
-        
-
-
         string returnString = "";
         switch (descriptor.type)
         { 
@@ -106,8 +102,6 @@ public class CardGenerator : MonoBehaviour
             break;
 
         }
-
-
         return returnString;
     }
 

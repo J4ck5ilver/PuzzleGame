@@ -96,4 +96,9 @@ public class GameManager : MonoBehaviour
         return activePlayerCard;
     }
     
+    public void ResetMap()
+    {
+        CardPanelManager.Instance.ResetCardsInPanel();
+    }
+
 }

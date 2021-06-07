@@ -8,6 +8,11 @@ public class GameEventManager : MonoBehaviour
 {
     static public GameEventManager Instance { get; private set; }
 
+    private void Awake()
+    {
+        Instance = this;
+    }
 
-    
+
+
 }
