@@ -20,6 +20,9 @@ public class GameManager : MonoBehaviour
     public delegate void TurnCompleted();
     public static event TurnCompleted OnTurnCompleted;
 
+    public delegate void ResetStage();
+    public static event ResetStage OnStageReset;
+
     void Awake()
     {
         Instance = this;
@@ -31,7 +34,6 @@ public class GameManager : MonoBehaviour
     {
         CardPanel.OnPlay += UserPressedPlay;
         Moves.OnActionComplete += ActorFinishedAction;
-        Moves.OnReachedGoal += PlayerReachedGoal;
     }
 
     void UserPressedPlay()
@@ -45,7 +47,7 @@ public class GameManager : MonoBehaviour
         OnTurnCompleted();
     }
 
-    void PlayerReachedGoal()
+    public void PlayerReachedGoal()
     {
         Debug.Log("GM: Player reached goal");
 
@@ -99,6 +101,7 @@ public class GameManager : MonoBehaviour
     public void ResetMap()
     {
         CardPanelManager.Instance.ResetCardsInPanel();
+        OnStageReset();
     }
 
 }

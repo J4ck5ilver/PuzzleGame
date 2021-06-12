@@ -16,7 +16,6 @@ public class Moves : MonoBehaviour
     [SerializeField] bool moveCompleted = false;
 
     [SerializeField] bool onGround = false;
-    [SerializeField] Transform groundCheck;
     [SerializeField] float checkRadiusGround;
     [SerializeField] LayerMask whatIsGround;
 
@@ -33,22 +32,10 @@ public class Moves : MonoBehaviour
     public delegate void ActionComplete();
     public static event ActionComplete OnActionComplete;
 
-    public delegate void ReachedGoal();
-    public static event ReachedGoal OnReachedGoal;
-
-    private void OnNewTurn()
-    {
-        Debug.Log("Player: New Turn");
-        activeCard = GameManager.Instance.GetActivePlayerCard();
-        playMoves = true;
-    }
-
 
     // Start is called before the first frame update
     void Start()
     {
-        GameManager.OnNewTurn += OnNewTurn;
-
         rigidbody = transform.GetComponent<Rigidbody>();
 
         startPos = transform.position;
@@ -89,14 +76,17 @@ public class Moves : MonoBehaviour
         }
     }
 
-
-    private void OnTriggerEnter(Collider other)
+    public void SetActiveCard(Card card)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Goal"))
-        {
-            OnReachedGoal();
-        }
+        activeCard = card;
     }
+
+    public void SetPlay(bool state)
+    {
+        playMoves = state;
+    }
+
+  
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -113,7 +103,7 @@ public class Moves : MonoBehaviour
         }
     }
 
-    void ResetMovement()
+    public void ResetMovement()
     {
         transform.position = startPos;
         currentStep = 0;
