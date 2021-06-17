@@ -63,6 +63,11 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     }
 
+    private void OnNewTurn()
+    {
+        SetState(CardPanelState.NextStep);
+    }
+
     private void Start()
     {
 
@@ -76,7 +81,8 @@ public class CardPanel : MonoBehaviour, IDragHandler
         SetTheme(theme);
 
         //UpdateUIFunction() // from themeManager
-
+        //Change name to Turn and Rounds?
+        GameManager.OnNewTurn += OnNewTurn;
         GameManager.OnTurnCompleted += NextCard;
     }
 
