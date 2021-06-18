@@ -32,9 +32,14 @@ public class CardPanelManager : MonoBehaviour
         startPanel.GetComponent<CardPanel>().SetTheme(cardPanelThem);
     }
 
-    public void ResetCardsInPanel()
+    public void HardResetCardsInPanel()
     {
-        startPanel.GetComponent<CardPanel>().SetState(CardPanelState.Reset);
+        startPanel.GetComponent<CardPanel>().SetState(CardPanelState.HardReset);
+    }
+
+    public void SoftResetCardsInPanel()
+    {
+        startPanel.GetComponent<CardPanel>().SetState(CardPanelState.SoftReset);
     }
 
 }

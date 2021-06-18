@@ -44,7 +44,8 @@ public enum CardPanelState
 {
     Play,
     Select,
-    Reset,
+    HardReset,
+    SoftReset,
     NextStep
 }
 

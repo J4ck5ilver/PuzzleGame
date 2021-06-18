@@ -18,9 +18,14 @@ public class CardPanelEditor : Editor
 
         CardPanel cardPanel = (CardPanel)target;
 
-        if (GUILayout.Button("Reset State"))
+        if (GUILayout.Button("Soft Reset"))
         {
-            cardPanel.SetState(CardPanelState.Reset);
+            cardPanel.SetState(CardPanelState.SoftReset);
+        }
+
+        if (GUILayout.Button("Hard Reset"))
+        {
+            cardPanel.SetState(CardPanelState.HardReset);
         }
 
         if (GUILayout.Button("Next Step"))

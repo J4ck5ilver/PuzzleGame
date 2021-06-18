@@ -17,6 +17,9 @@ public class GameManager : MonoBehaviour
     public delegate void NewTurn();
     public static event NewTurn OnNewTurn;
 
+    public delegate void NewRound();
+    public static event NewRound OnNewRound;
+
     public delegate void TurnCompleted();
     public static event TurnCompleted OnTurnCompleted;
 
@@ -60,6 +63,7 @@ public class GameManager : MonoBehaviour
     {
         if(pressedPlay)
         {
+            // this function can be moved into UserPressedPlay() function
             Debug.Log("GM: Pressed play");
             pressedPlay = false;
             roundStarted = true;
@@ -84,8 +88,19 @@ public class GameManager : MonoBehaviour
                 }
                 else 
                 {
+
+
+                    // if (still alive and not finnished)
+                    OnNewRound();
+                    //else
+                    // if finnished? if dead?
+                    // then
+                    // replay? main menu (Map selector)?
+
+
                     Debug.Log("GM: No more cards");
                     //End round
+
                 }
             }
         }
@@ -100,7 +115,13 @@ public class GameManager : MonoBehaviour
     
     public void ResetMap()
     {
-        CardPanelManager.Instance.ResetCardsInPanel();
+        CardPanelManager.Instance.HardResetCardsInPanel();
+        OnStageReset();
+    }
+
+    public void Retry()
+    {
+        CardPanelManager.Instance.SoftResetCardsInPanel();
         OnStageReset();
     }
 

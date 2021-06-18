@@ -50,22 +50,33 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     private float deltaFloat = 0.0f;
 
+    private Dictionary<int, List<Transform>> playedCardSlots;
+
+    private int currentRound;
+
     private void Awake()
     {
         sortOrder = CardSortOrder.CardType;
         currentState = CardPanelState.Select;
         InitCardSlotData();
 
+        playedCardSlots = new Dictionary<int, List<Transform>>();
+
         playButtonTransform = transform.Find("playButton");
         PlayButton component = playButtonTransform.GetComponent<PlayButton>();
         component.OnClick += OnPlayButtonClicked;
 
+        currentRound = 0;
+    }
 
+    private void OnNewRound()
+    {
+        SetState(CardPanelState.NextStep);
     }
 
     private void OnNewTurn()
     {
-        SetState(CardPanelState.NextStep);
+        NextCard();
     }
 
     private void Start()
@@ -81,9 +92,8 @@ public class CardPanel : MonoBehaviour, IDragHandler
         SetTheme(theme);
 
         //UpdateUIFunction() // from themeManager
-        //Change name to Turn and Rounds?
-        GameManager.OnNewTurn += OnNewTurn;
-        GameManager.OnTurnCompleted += NextCard;
+        GameManager.OnNewRound += OnNewRound;
+        GameManager.OnTurnCompleted += OnNewTurn;
     }
 
     private void Update()
@@ -100,7 +110,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
             {
                 deltaFloat += Time.deltaTime * 1.8f;
                 float alfaVal = Mathf.Lerp(0.3f, 0.6f, Mathf.Abs(Mathf.Sin(deltaFloat)));
-               tmpCard.SetAlfa(alfaVal);
+                tmpCard.SetAlfa(alfaVal);
             }
 
         }
@@ -155,7 +165,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
         {
             holdingCardCardSlot.gameObject.SetActive(true);
 
-        
+
 
             cardSlot.SetIsSelected(false);
             cardSlot.transform.SetParent(nonSelectedCardSlots.transform);
@@ -166,7 +176,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
         }
 
-   
+
         holdingCardCardSlot = null;
         scrollingEnabled = true;
         lastHoldCardSelectionGroupIndex = -1;
@@ -398,6 +408,20 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
     }
 
+    private void UpdateCardSlots()
+    {
+        SortNonSelectedCards();
+        UpdateSlotsOffset();
+        SortNonSelectedCards();
+    }
+
+    private void EnableUserInterraction(bool state)
+    {
+        EnableScrolling(state);
+        EnablePlayButton(state);
+        EnableCardSelection(state);
+    }
+
     public void SetState(CardPanelState state)
     {
         currentState = state;
@@ -407,9 +431,7 @@ public class CardPanel : MonoBehaviour, IDragHandler
             case CardPanelState.Play:
 
                 //Vector3 oldPosition = selectionCardSlots.GetComponent<RectTransform>().position;
-                EnableScrolling(false);
-                EnablePlayButton(false);
-                EnableCardSelection(false);
+                EnableUserInterraction(false);
                 NextCard();
                 //selectionCardSlots.GetComponent<RectTransform>().position = new Vector3(0.0f, oldPosition.y, oldPosition.z);
                 // UpdateSlotsOffset();
@@ -419,9 +441,9 @@ public class CardPanel : MonoBehaviour, IDragHandler
                 rectTransform.position = new Vector3(0.0f, oldPosition.y, oldPosition.z);
                 rectTransform.anchoredPosition = new Vector2(0.0f, 0.0f);
 
-                rectTransform.anchoredPosition3D  = new Vector3(0.0f, 0.0f, 0.0f);
+                rectTransform.anchoredPosition3D = new Vector3(0.0f, 0.0f, 0.0f);
 
-                if(OnPlay != null)
+                if (OnPlay != null)
                 {
                     OnPlay();
                 }
@@ -431,15 +453,34 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
                 break;
 
-            case CardPanelState.Reset:
+            case CardPanelState.HardReset:
+                EnableUserInterraction(true);
+                MoveAllCardSlotsInSelectedGroupToNonSelected();
+                ActivateAllDisabledCardSlotsInNonSelectedGroup();
+                MoveCardsSlotsInPlayedListToSelected();
+                playedCardSlots = new Dictionary<int, List<Transform>>();
+                UpdateCardSlots();
+                    currentRound = 0;
+                break;
 
-                EnableScrolling(true);
-                EnablePlayButton(true);
-                EnableCardSelection(true);
-                ActivateAllDisabledSlotsInSelectedGroup();
-                UpdateSlotsOffset();
-                SortNonSelectedCards();
 
+            case CardPanelState.SoftReset:
+
+                EnableUserInterraction(true);
+
+                if (playedCardSlots.Count != 0)
+                {
+                    currentRound--;
+                    MoveAllCardSlotsInSelectedGroupToNonSelected();
+                    MoveCardsSlotsInPlayedListToSelectedFromCurrentTurn();
+                    ActivateAllDisabledCardSlotsInSelectedGroup();
+                    UpdateCardSlots();
+                    playedCardSlots.Remove(currentRound);
+                    if (currentRound < 0)
+                    {
+                        currentRound = 0;
+                    }
+                }
                 break;
 
             case CardPanelState.Select:
@@ -447,14 +488,80 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
                 break;
             case CardPanelState.NextStep:
-                EnableScrolling(true);
-                EnablePlayButton(true);
-                EnableCardSelection(true);
+                EnableUserInterraction(true);
+                AddDisabledCardSlotsToPlayedList();
                 MoveAllDisabledSlotsInSelectedGroupToNonSelected();
-                UpdateSlotsOffset();
-                SortNonSelectedCards();
+                UpdateCardSlots();
                 SetState(CardPanelState.Select);
+                currentRound++;
+
                 break;
+        }
+    }
+
+    private void MoveCardsSlotsInPlayedListToSelectedFromCurrentTurn()
+    {
+        foreach (Transform cardSlot in playedCardSlots[currentRound])
+        {
+            cardSlot.GetComponent<CardSlot>().SetIsSelected(true);
+            cardSlot.transform.SetParent(selectedCardSlots.transform);
+        }
+    }
+    private void MoveCardsSlotsInPlayedListToSelected()
+    {
+        foreach (int turn in playedCardSlots.Keys)
+        {
+            foreach (Transform cardSlot in playedCardSlots[turn])
+            {
+                cardSlot.GetComponent<CardSlot>().SetIsSelected(true);
+                cardSlot.transform.SetParent(selectedCardSlots.transform);
+            }
+        }
+    }
+    private void AddDisabledCardSlotsToPlayedList()
+    {
+        playedCardSlots.Add(currentRound, new List<Transform>());
+
+
+        foreach (Transform cardSlot in selectedCardSlots)
+        {
+            if (!cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>() != null)
+            {
+                playedCardSlots[currentRound].Add(cardSlot);
+            }
+        }
+
+
+    }
+
+    private void MoveAllCardSlotsInSelectedGroupToNonSelected()
+    {
+
+        List<Transform> slotsToMove = new List<Transform>();
+
+        foreach (Transform cardSlot in selectedCardSlots)
+        {
+            if (cardSlot.GetComponent<CardSlot>() != null)
+            {
+                slotsToMove.Add(cardSlot);
+            }
+        }
+
+        foreach (Transform cardSlot in slotsToMove)
+        {
+            cardSlot.GetComponent<CardSlot>().SetIsSelected(false);
+            cardSlot.transform.SetParent(nonSelectedCardSlots.transform);
+        }
+    }
+
+    private void ActivateAllDisabledCardSlotsInNonSelectedGroup()
+    {
+        foreach (Transform cardSlot in nonSelectedCardSlots)
+        {
+            if (!cardSlot.gameObject.activeInHierarchy && cardSlot.GetComponent<CardSlot>() != null)
+            {
+                cardSlot.gameObject.SetActive(true);
+            }
         }
     }
 
@@ -475,11 +582,10 @@ public class CardPanel : MonoBehaviour, IDragHandler
             cardSlot.GetComponent<CardSlot>().SetIsSelected(false);
             cardSlot.transform.SetParent(nonSelectedCardSlots.transform);
         }
-        SortNonSelectedCards();
 
     }
 
-    private void ActivateAllDisabledSlotsInSelectedGroup()
+    private void ActivateAllDisabledCardSlotsInSelectedGroup()
     {
         foreach (Transform cardSlot in selectedCardSlots)
         {
@@ -684,11 +790,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
         }
     }
 
-    private int GetNumberOfActiveCardSlots()
-    {
-        return GetNumberOfActiveCardSlotsInSelected() + GetNumberOfActiveCardSlotsInNonSelected();
-    }
-
     private int GetNumberOfActiveCardSlotsInSelected()
     {
         int returnValue = 0;
@@ -782,43 +883,6 @@ public class CardPanel : MonoBehaviour, IDragHandler
 
         return returnValue;
     }
-    #region DebugFunctions
-
-    public void MoveFirstChildFromSelectedToNonSelcted()
-    {
-
-        InitCardSlotData();
-
-        foreach (Transform cardSlot in selectedCardSlots)
-        {
-            if (cardSlot.GetComponent<CardSlot>() != null)
-            {
-                cardSlot.SetParent(nonSelectedCardSlots.transform);
-                break;
-            }
-
-            break;
-        }
-        UpdateSlotsOffset();
-        SortNonSelectedCards();
-    }
-
-    public void MoveFirstChildFromNonSelctedToSelected()
-    {
-        InitCardSlotData();
-        foreach (Transform cardSlot in nonSelectedCardSlots)
-        {
-            if (cardSlot.GetComponent<CardSlot>() != null)
-            {
-                cardSlot.SetParent(selectedCardSlots.transform);
-                break;
-            }
-        }
-        UpdateSlotsOffset();
-        SortNonSelectedCards();
-    }
-
-    #endregion
     #endregion
 
 
