@@ -27,6 +27,10 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
     private float holdCardDelay = 0.35f;
     private float holdCardTimer = 0.0f;
 
+    private float rotationOffset = 0.0f;
+
+    private Direction rotationDirection;
+
     private bool holdingCardTimerActive = false;
 
     private void Awake()
@@ -115,6 +119,7 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
         numberOfMoves = descriptor.numberOfMoves;
         cardType = descriptor.type;
         direction = descriptor.direction;
+        rotationDirection = direction;
         UpdateVisuals();
         CardThemeSO theme = AssetManager.GetCardTheme(ThemeManager.Instance.GetCurrentCardTheme());
         SetTheme(theme);
@@ -134,10 +139,10 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
         TextMeshProUGUI numberOfMovesText = transform.Find("numberOfMovesSprite").Find("text").GetComponent<TextMeshProUGUI>();
         numberOfMovesText.text = Mathf.Clamp(numberOfMoves, GameConstants.minNumberOfMoves, GameConstants.maxNumberOfMoves).ToString();
 
-        if (direction != Direction.None)
+        if (rotationDirection != Direction.None)
         {
             RectTransform directionTransform = transform.Find("directionSprite").GetComponent<RectTransform>();
-            Vector3 rotation = new Vector3(0, 0, UtilsClass.DirectionToDegrees(direction));
+            Vector3 rotation = new Vector3(0, 0, (UtilsClass.DirectionToDegrees(rotationDirection) + rotationOffset));
             directionTransform.rotation = Quaternion.Euler(rotation);
         }
 
@@ -151,6 +156,45 @@ public class Card : MonoBehaviour, IPointerClickHandler, IDragHandler, IBeginDra
         cardData.direction = direction;
 
         return cardData;
+    }
+
+    public void SetDirectionArrowRotationOffset(float offset)
+    {
+        rotationOffset = offset;
+        //int newDir = (int)latitude - (int)direction;
+
+        //if(Math.Abs(newDir) == 2)
+        //{
+        //    //Debug.Log("180");
+        //    rotationOffset = 180.0f;
+        //}
+        //else if (Math.Abs(newDir) == 3)
+        //{
+        //    rotationOffset = -90.0f;
+        //    //Debug.Log("-90");
+        //}
+        //else if (Math.Abs(newDir) == 1)
+        //{
+        //    rotationOffset = 90.0f;
+        //    //Debug.Log("90");
+        //}
+        //else
+        //{
+        //    rotationOffset = 0.0f;
+        //}
+
+          //  rotationDirection = GetNewFromDirections(direction, latitude);
+        UpdateVisuals();
+    }
+
+    private Direction GetNewFromDirections(Direction from, Direction To)
+    {
+
+        
+
+
+
+        return Direction.East;
     }
 
     public void SetTheme(CardThemeSO theme)

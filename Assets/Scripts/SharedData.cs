@@ -58,6 +58,12 @@ public class PanelEventArgs : EventArgs
     public int intData;
 }
 
+
+public class LatitudeChangeArgs : EventArgs
+{
+    public Direction Latitude;
+}
+
 public static class GameConstants
 {
     public const int maxNumberOfMoves = 10;

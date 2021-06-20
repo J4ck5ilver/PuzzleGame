@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class CardManager : MonoBehaviour
 {
@@ -11,11 +12,61 @@ public class CardManager : MonoBehaviour
 
     private List<Transform> cardsInPlay = new List<Transform>();
 
+    private Direction OrientationDirection = Direction.South;
+
     private Transform currentCardInPlay;
+
+    private float cardRotationOffset = 0.0f;
     private void Awake()
     {
         Instance = this;
         InitStartCards();
+        CameraManager.Instance.OnChangedLatitudeEvent += OnLatiduteChange;
+    }
+
+    private void OnLatiduteChange(object sender, LatitudeChangeArgs args)
+    {
+
+        if(args.Latitude == OrientationDirection)
+        {
+            cardRotationOffset = 0.0f;
+        }
+        else 
+        {
+            if(OrientationDirection == Direction.North)
+            {
+                Debug.Log("North Direction Not Implemented");
+            }
+            else if (OrientationDirection == Direction.East)
+            {
+                Debug.Log("East Direction Not Implemented");
+            }
+            else if (OrientationDirection == Direction.South)
+            {
+
+                if (args.Latitude == Direction.North)
+                {
+                    cardRotationOffset = 180.0f;
+                }
+                else if (args.Latitude == Direction.East)
+                {
+                    cardRotationOffset = -90.0f;
+                }
+                else
+                {
+                    cardRotationOffset = 90.0f;
+                }
+            }
+            else if (OrientationDirection == Direction.West)
+            {
+                Debug.Log("West Direction Not Implemented");
+            }
+        }
+
+        foreach (Transform card in cardsInPlay)
+        {
+            card.GetComponent<Card>().SetDirectionArrowRotationOffset(cardRotationOffset);
+        }
     }
 
     private void InitStartCards()
