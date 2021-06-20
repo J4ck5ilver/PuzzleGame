@@ -153,6 +153,8 @@ public class CameraManager : MonoBehaviour
 
             //float DollyCartDirection = CameraInterpolationSpeed;
 
+            
+
             Direction closestDirection;
 
             Vector3 dirVector = GetCameraDirection();
