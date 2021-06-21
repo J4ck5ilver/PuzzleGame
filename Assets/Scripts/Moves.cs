@@ -12,6 +12,8 @@ public class Moves : MonoBehaviour
 
     [SerializeField] float walkSpeed = 0.0f;
     [SerializeField] float jumpSpeed = 0.0f;
+    [SerializeField] float jumpForce = 1700.0f;
+    [SerializeField] float maxJumpHeight = 0.5f;
     [SerializeField] int currentStep = 0;
     [SerializeField] bool moveCompleted = false;
 
@@ -22,7 +24,7 @@ public class Moves : MonoBehaviour
     Dictionary<CardType, System.Action> actionAtlas = new Dictionary<CardType, System.Action>();
 
     Vector3 StepStartPos;
-    Vector3 goalPos;
+    Vector3 destinationPos;
 
     Rigidbody rigidbody;
 
@@ -131,12 +133,12 @@ public class Moves : MonoBehaviour
         if (currentStep == 0)
         {
             StepStartPos = transform.position;
-            goalPos = transform.position + steps;
+            destinationPos = transform.position + steps;
             currentStep = 1;
         }
         else if (currentStep == 1)
         {
-            float distance = new Vector2(transform.position.x - goalPos.x, transform.position.z - goalPos.z).magnitude;
+            float distance = new Vector2(transform.position.x - destinationPos.x, transform.position.z - destinationPos.z).magnitude;
 
             if (distance > 0.05)
             {
@@ -145,7 +147,7 @@ public class Moves : MonoBehaviour
             }
             else
             {
-                transform.position = new Vector3(goalPos.x, transform.position.y, goalPos.z);
+                transform.position = new Vector3(destinationPos.x, transform.position.y, destinationPos.z);
                 moveCompleted = true;
             }
         }
@@ -183,11 +185,12 @@ public class Moves : MonoBehaviour
         if (currentStep == 0)
         {
             StepStartPos = new Vector3(transform.position.x, transform.position.y, transform.position.z);
-            goalPos = transform.position + steps;
-            goalPos.y = 0;
+            destinationPos = transform.position + steps;
+            destinationPos.y = 0;
             currentStep = 1;
             rigidbody.velocity = Vector3.zero;
-            rigidbody.AddForce(new Vector3(0.0f, 3100.0f, 0.0f));
+            rigidbody.AddForce(new Vector3(0.0f, jumpForce, 0.0f));
+            
         }
         else if (currentStep == 1)
         {
@@ -198,8 +201,20 @@ public class Moves : MonoBehaviour
         }
         else if (currentStep == 2)
         {
-            goalPos.y = transform.position.y;
-            WalkForwardsPos(goalPos, jumpSpeed);
+            destinationPos.y = transform.position.y;
+            WalkForwardsPos(destinationPos, jumpSpeed);
+            Vector3 betweenVector = new Vector3(destinationPos.x - transform.position.x, 0.0f, destinationPos.z - transform.position.z);
+            float distance = betweenVector.magnitude;
+
+            if (transform.position.y - StepStartPos.y > maxJumpHeight && distance > 0.5f)
+            {
+                rigidbody.useGravity = false;
+                rigidbody.velocity = Vector3.zero;
+            }
+            else
+            {
+                rigidbody.useGravity = true;
+            }
 
             if (onGround == true)
             {
