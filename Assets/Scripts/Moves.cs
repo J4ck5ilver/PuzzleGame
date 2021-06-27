@@ -88,7 +88,10 @@ public class Moves : MonoBehaviour
         playMoves = state;
     }
 
-  
+    public bool IsPlayingMoves()
+    {
+        return playMoves;
+    }
 
     private void OnCollisionEnter(Collision collision)
     {

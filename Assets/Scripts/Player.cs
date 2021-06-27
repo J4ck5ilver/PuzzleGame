@@ -38,7 +38,7 @@ public class Player : MonoBehaviour
     {
         if(alive)
         {
-            if (ObsticleTrigger.IsTriggered())
+            if (ObsticleTrigger.IsTriggered() && movesScript.IsPlayingMoves())
             {
                 SetAsDead();
             }
