@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+
+    [SerializeField] Trigger ObsticleTrigger;
+
+
     [SerializeField] Vector3 startPos;
     [SerializeField] Quaternion startRotation;
     [SerializeField] Vector3 startScale;
@@ -14,6 +18,8 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
+
         GameManager.OnNewTurn += OnNewTurn;
         GameManager.OnStageReset += ResetPlayer;
 
@@ -30,13 +36,28 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(alive)
+        {
+            if (ObsticleTrigger.IsTriggered())
+            {
+                SetAsDead();
+            }
+        } 
     }
+
     private void OnNewTurn()
     {
         Debug.Log("Player: New Turn");
         movesScript.SetActiveCard(GameManager.Instance.GetActivePlayerCard());
         movesScript.SetPlay(true);
+    }
+
+    void SetAsDead()
+    {
+
+        Debug.Log("Player: Im dead :(");
+        alive = false;
+        movesScript.SetPlay(false);
     }
 
     private void ResetPlayer()
@@ -59,10 +80,7 @@ public class Player : MonoBehaviour
 
         if (other.gameObject.layer == LayerMask.NameToLayer("Death"))
         {
-            Debug.Log("Player: Im dead :(");
-            alive = false;
-            movesScript.SetPlay(false);
-
+            SetAsDead();
         }
     }
 }
